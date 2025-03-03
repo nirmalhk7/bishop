@@ -7,12 +7,29 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.Bishop"
+      "bundleIdentifier": "com.anonymous.Bishop",
+      "entitlements": {
+        "aps-environment": "development"
+      },
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location",
+          "remote-notification",
+          "fetch",
+          "location",
+          "remote-notification",
+          "fetch"
+        ],
+        "NSLocationWhenInUseUsageDescription": "We need your location to provide location-based predictions.",
+        "NSLocationAlwaysUsageDescription": "We need your location in the background for real-time tracking.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location at all times.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.anonymous.Bishop",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -24,7 +41,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "origin": false
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -35,8 +57,17 @@
         }
       ]
     ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "930fa826-63b1-42f0-b3c8-43a76aecb4b0"
+      }
+    },
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "owner": "sanjayb-28"
   }
 }
