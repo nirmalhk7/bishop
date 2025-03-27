@@ -35,6 +35,6 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-/andriod
+/android
 /ios
 /firebase
