@@ -8,8 +8,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
 
-
-
 # Generate synthetic data
 fake = Faker()
 num_samples = 15000  # 100 days of data, collected every 10 minutes
