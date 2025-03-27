@@ -11,6 +11,10 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       # Checkout the repository
       - name: Checkout code
