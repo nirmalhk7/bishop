@@ -1,28 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Button,
+  useColorScheme
+} from 'react-native';
 import { useLocation } from '../src/context/LocationContext';
 import * as Location from 'expo-location';
 
 export default function HomeScreen() {
+  const colorScheme = useColorScheme(); // 'light' or 'dark'
+
+  // Destructure location-related logic
   const { notifications, isTracking, startTracking, stopTracking, clearNotifications, lastLocation } = useLocation();
   const [locationName, setLocationName] = useState<string>('No location yet');
 
-  // When lastLocation changes, reverse geocode to get address information.
+  // Reverse geocode the last location to get a human-readable address.
   useEffect(() => {
     if (lastLocation) {
       (async () => {
         try {
           const [result] = await Location.reverseGeocodeAsync(lastLocation.coords);
           const { street, city, region, country } = result;
-          // Compose a location name; adjust formatting as desired.
-          const name = [
-            street && street.trim(),
-            city && city.trim(),
-            region && region.trim(),
-            country && country.trim()
-          ]
-            .filter(Boolean)
-            .join(', ');
+          const name = [street, city, region, country].filter(Boolean).join(', ');
           setLocationName(name || 'Location unknown');
         } catch (error) {
           console.error('Reverse geocode failed:', error);
@@ -32,8 +34,13 @@ export default function HomeScreen() {
     }
   }, [lastLocation]);
 
+  // Define some dynamic colors based on the color scheme
+  const backgroundColor = colorScheme === 'dark' ? '#121212' : '#ffffff';
+  const textColor = colorScheme === 'dark' ? '#ffffff' : '#000000';
+  const cardBackground = colorScheme === 'dark' ? '#333333' : '#f0f0f0';
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       <View style={styles.controls}>
         {!isTracking ? (
           <Button title="Start Tracking" onPress={startTracking} />
@@ -43,7 +50,12 @@ export default function HomeScreen() {
         <Button title="Clear Notifications" onPress={clearNotifications} />
       </View>
 
-      <Text style={styles.locationText}>
+      <Text
+        style={[
+          styles.locationText,
+          { backgroundColor: cardBackground, color: textColor }
+        ]}
+      >
         Last Location: {locationName}
       </Text>
 
@@ -51,12 +63,20 @@ export default function HomeScreen() {
         data={notifications}
         keyExtractor={(item) => item.request.identifier}
         renderItem={({ item }) => (
-          <View style={styles.notificationItem}>
-            <Text style={styles.title}>{item.request.content.title}</Text>
-            <Text>{item.request.content.body}</Text>
+          <View style={[styles.notificationItem, { borderBottomColor: '#888' }]}>
+            <Text style={[styles.title, { color: textColor }]}>
+              {item.request.content.title}
+            </Text>
+            <Text style={{ color: textColor }}>
+              {item.request.content.body}
+            </Text>
           </View>
         )}
-        ListEmptyComponent={<Text style={styles.empty}>No notifications yet</Text>}
+        ListEmptyComponent={
+          <Text style={[styles.empty, { color: textColor }]}>
+            No notifications yet
+          </Text>
+        }
       />
     </View>
   );
@@ -65,33 +85,30 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: 50
   },
   controls: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    marginBottom: 20,
+    marginBottom: 20
   },
   notificationItem: {
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomWidth: 1
   },
   title: {
     fontWeight: 'bold',
+    marginBottom: 4
   },
   empty: {
     textAlign: 'center',
-    marginTop: 20,
-    color: '#888',
+    marginTop: 20
   },
   locationText: {
     textAlign: 'center',
     marginBottom: 20,
     fontSize: 16,
     padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    color: '#333',
-  },
+    borderRadius: 8
+  }
 });

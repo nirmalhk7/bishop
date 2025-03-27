@@ -4,7 +4,9 @@
     "slug": "Bishop",
     "version": "1.0.0",
     "orientation": "portrait",
+
     "icon": "./assets/images/icon.png",
+
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -17,28 +19,34 @@
         "UIBackgroundModes": [
           "location",
           "remote-notification",
-          "fetch",
-          "location",
-          "remote-notification",
           "fetch"
         ],
         "NSLocationWhenInUseUsageDescription": "We need your location to provide location-based predictions.",
         "NSLocationAlwaysUsageDescription": "We need your location in the background for real-time tracking.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location at all times.",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "runtimeVersion": "1.0.0"
     },
     "android": {
       "package": "com.anonymous.Bishop",
+      "googleServicesFile": "./firebase/google-services.json",
+      "permissions": [
+        "FOREGROUND_SERVICE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#FFFFFF"
+      },
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       [
@@ -48,12 +56,20 @@
         }
       ],
       [
+        "expo-location",
+        {
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "preventAutoHide": true,
+          "image": "./assets/images/adaptive-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#F1FAEE"
         }
       ]
     ],
@@ -68,6 +84,9 @@
     "experiments": {
       "typedRoutes": true
     },
-    "owner": "sanjayb-28"
+    "owner": "sanjayb-28",
+    "updates": {
+      "url": "https://u.expo.dev/930fa826-63b1-42f0-b3c8-43a76aecb4b0"
+    }
   }
 }
