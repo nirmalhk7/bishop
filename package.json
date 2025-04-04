@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@react-native-community/cli": "^17.0.0",
+    "typescript": "^5.3.3",
+    "@types/react": "~18.3.12"
+  },
+  "dependencies": {
+    "expo-location": "^18.0.7"
+  }
+}

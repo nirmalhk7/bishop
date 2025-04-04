@@ -17,7 +17,8 @@ async function bootstrap() {
   // Enable CORS for cross-origin requests
   app.enableCors();
   
-  // Start server on port 3000
-  await app.listen(3000);
+  // Use PORT from environment variable or default to 3000
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
 }
 bootstrap();

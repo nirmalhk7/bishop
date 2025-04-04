@@ -44,7 +44,7 @@
       "runtimeVersion": "1.0.0"
     },
     "web": {
-      "bundler": "metro",
+      "bundler": "webpack",
       "output": "static",
       "favicon": "./assets/images/icon.png"
     },
