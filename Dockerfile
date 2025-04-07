@@ -17,7 +17,7 @@ RUN yarn install
 COPY mobile/Bishop/ ./
 
 # Expose Metro bundler port (default: 8081)
-EXPOSE 8081
+EXPOSE 8080
 
 # Start Expo CLI in non-interactive, no web mode
 CMD ["npx", "expo", "start", "--lan", "--no-dev", "--non-interactive"]
