@@ -1,2 +1,3 @@
 influxdb-client
 faker
+google-cloud-bigquery

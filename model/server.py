@@ -1,22 +1,24 @@
 from flask import Flask, request, jsonify
-from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 from dotenv import load_dotenv
+from google.cloud import bigquery
 import os
+from datetime import datetime
+import uuid
+from model import 
 
 app = Flask(__name__)
 
+
 # Load environment variables from .env file
 load_dotenv()
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "bdarch-bishop-model.gcp.json")
 
-# InfluxDB configuration
-token = os.getenv("INFLUXDB_TOKEN")
-org = os.getenv("INFLUXDB_ORG")
-bucket = os.getenv("INFLUXDB_BUCKET")
-url = os.getenv("INFLUXDB_URL")
-
-client = InfluxDBClient(url=url, token=token)
-write_api = client.write_api(write_options=SYNCHRONOUS)
+# BigQuery configuration
+bigquery_client = bigquery.Client()
+print("Connected to BigQuery:", bigquery_client.project)
+dataset_id = "timeseries_data_location"
+table_id = "timeseries_location_table"
 
 @app.route('/model/coordinates', methods=['POST'])
 def add_coordinates():
@@ -27,28 +29,24 @@ def add_coordinates():
     if latitude is None or longitude is None:
         return jsonify({"error": "Invalid input"}), 400
 
-    point = Point("coordinates") \
-        .tag("location", "default") \
-        .field("latitude", latitude) \
-        .field("longitude", longitude) \
-        .time(write_precision=WritePrecision.NS)
+    # Prepare the row to insert into BigQuery
+    row = [
+        {
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now().isoformat(),
+            "coordinates": f"{longitude} {latitude}",
+        }
+    ]
 
-    write_api.write(bucket=bucket, org=org, record=point)
+    # Insert the row into BigQuery
+    table_ref = f"{dataset_id}.{table_id}"
+    errors = bigquery_client.insert_rows_json(table_ref, row)
+
+    if errors:
+        return jsonify({"error": "Failed to insert data into BigQuery", "details": errors}), 500
 
     return jsonify({"message": "Coordinates added successfully"}), 201
 
-@app.route('/model/coordinates', methods=['GET'])
-def last_update():
-    query = f'from(bucket: "{bucket}") |> range(start: -1h) |> filter(fn: (r) => r._measurement == "coordinates") |> sort(columns: ["_time"], desc: true) |> limit(n: 1)'
-    tables = client.query_api().query(query, org=org)
-    
-    if not tables or not tables[0].records:
-        return jsonify({"error": "No data found"}), 404
-
-    last_record = tables[0].records[0]
-    last_update_time = last_record.get_time()
-
-    return jsonify({"last_update": last_update_time.isoformat()}), 200
 
 
 @app.route('/model/hello', methods=["GET"])
