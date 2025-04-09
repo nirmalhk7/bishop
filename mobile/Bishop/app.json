@@ -1,0 +1,92 @@
+{
+  "expo": {
+    "name": "Bishop",
+    "slug": "Bishop",
+    "version": "1.0.0",
+    "orientation": "portrait",
+
+    "icon": "./assets/images/icon.png",
+
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.Bishop",
+      "entitlements": {
+        "aps-environment": "development"
+      },
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location",
+          "remote-notification",
+          "fetch"
+        ],
+        "NSLocationWhenInUseUsageDescription": "We need your location to provide location-based predictions.",
+        "NSLocationAlwaysUsageDescription": "We need your location in the background for real-time tracking.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location at all times.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "runtimeVersion": "1.0.0"
+    },
+    "android": {
+      "package": "com.anonymous.Bishop",
+      "googleServicesFile": "./firebase/google-services.json",
+      "permissions": [
+        "FOREGROUND_SERVICE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "runtimeVersion": "1.0.0"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "preventAutoHide": true,
+          "image": "./assets/images/adaptive-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F1FAEE"
+        }
+      ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "930fa826-63b1-42f0-b3c8-43a76aecb4b0"
+      }
+    },
+    "experiments": {
+      "typedRoutes": true
+    },
+    "owner": "sanjayb-28",
+    "updates": {
+      "url": "https://u.expo.dev/930fa826-63b1-42f0-b3c8-43a76aecb4b0"
+    }
+  }
+}
