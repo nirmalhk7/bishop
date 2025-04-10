@@ -2,3 +2,5 @@
 **/node_modules
 **/*.gcp.json
 .vscode
+**/__pycache__
+**/*.DS_Store
