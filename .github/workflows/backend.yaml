@@ -1,4 +1,4 @@
-name: Publish Docker Image
+name: Publish Backend Docker Image (GH)
 
 on:
   push:
@@ -13,29 +13,27 @@ jobs:
 
     permissions:
       contents: read
+      packages: write
 
     steps:
       # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Authenticate with GCP
-      - name: Authenticate with GCP
-        uses: google-github-actions/auth@v1
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-      # Configure Docker to use GCP Artifact Registry
-      - name: Configure Docker for GCP Artifact Registry
-        run: |
-          gcloud auth configure-docker us-central1-docker.pkg.dev
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
 
       # Build the Docker image
       - name: Build Docker image
         run: |
-          docker build -t us-central1-docker.pkg.dev/bdarch-bishop/bishop/backend:latest ./backend
+          docker build -t ghcr.io/${{ github.repository_owner }}/backend:latest ./backend
 
-      # Push the Docker image to GCP Artifact Registry
+      # Push the Docker image to GitHub Packages
       - name: Push Docker image
         run: |
-          docker push us-central1-docker.pkg.dev/bdarch-bishop/bishop/backend:latest
+          docker push ghcr.io/${{ github.repository_owner }}/backend:latest
