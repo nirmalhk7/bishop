@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Query, Headers } from '@nestjs/common';
 import { ModelService } from './model.service';
-import { LocationDataDto, LocationPredictionDto } from './dto/model.dto';
 
 @Controller('model')
 export class ModelController {
@@ -10,7 +9,7 @@ export class ModelController {
 
   // GET endpoint for location prediction
   @Get('predict')
-  async getPrediction(@Query() query: LocationPredictionDto) {
+  async getPrediction(@Query() query) {
     try {
       const { userId, timestamp } = query;
       const prediction = await this.modelService.predictLocation(userId, timestamp);
@@ -28,7 +27,7 @@ export class ModelController {
 
   // POST endpoint for storing location data
   @Post('location')
-  async storeLocation(@Body() locationData: LocationDataDto) {
+  async storeLocation(@Body() locationData) {
     try {
       await this.modelService.storeLocationData(locationData);
       return {

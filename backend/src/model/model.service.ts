@@ -1,16 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { HttpServer, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+
 import { firstValueFrom } from 'rxjs';
-import { LocationDataDto } from './dto/model.dto';
 
 @Injectable()
 export class ModelService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
-
   // =============================
   // 🔮 ML MODEL API
   // =============================
@@ -28,7 +27,7 @@ export class ModelService {
     return response.data;
   }
 
-  async storeLocationData(data: LocationDataDto): Promise<any> {
+  async storeLocationData(data): Promise<any> {
     const response = await firstValueFrom(
       this.httpService.post(`${this.modelApiUrl}/data`, data),
     );
