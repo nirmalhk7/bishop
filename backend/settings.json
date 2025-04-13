@@ -1,0 +1,17 @@
+{
+    "endpoints": [
+        "./src/integrations/googlecalendar.service.ts",
+        "./src/integrations/mapdirections.service.ts",
+        "./src/integrations/reversegeocode.service.ts",
+        "./src/integrations/weather.service.ts",
+    ],
+    "times":{
+        "lunch": "13:00",
+        "dinner": "20:00",
+        "breakfast": "09:00"
+    },
+    "modesOfTravel": [
+        "walk",
+        "cycle"
+    ]
+}
