@@ -5,8 +5,7 @@ import { HttpService } from '@nestjs/axios';
 @Controller()
 export class AppController {
   constructor(
-    private readonly appService: AppService,
-    private readonly httpService: HttpService
+    private readonly appService: AppService
   ) {}
 
   @Get()
@@ -15,7 +14,7 @@ export class AppController {
   }
 
   @Get("/settings")
-  getSettings(): object {
+  getSettings(): SettingsInterface {
     return this.appService.getSettings();
   }
 }

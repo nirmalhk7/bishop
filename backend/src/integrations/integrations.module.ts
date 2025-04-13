@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { WeatherService } from './weather.service';
-import { GoogleCalendarService } from './googlecalendar.service';
-import { MapDirectionsService } from './mapdirections.service';
-import { ReverseGeocodeService } from './reversegeocode.service';
+import WeatherService from './weather.service';
+import GoogleCalendarService from './googlecalendar.service';
+import MapDirectionsService from './mapdirections.service';
+import ReverseGeocodeService from './reversegeocode.service';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 

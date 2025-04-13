@@ -1,9 +1,9 @@
 {
     "endpoints": [
-        "./src/integrations/googlecalendar.service.ts",
-        "./src/integrations/mapdirections.service.ts",
-        "./src/integrations/reversegeocode.service.ts",
-        "./src/integrations/weather.service.ts",
+        {"path": "integrations/googlecalendar.service", "method": "get"},
+        {"path": "integrations/mapdirections.service", "method": "directions"},
+        {"path": "integrations/reversegeocode.service", "method": "get"},
+        {"path": "integrations/weather.service", "method": "get"}
     ],
     "times":{
         "lunch": "13:00",

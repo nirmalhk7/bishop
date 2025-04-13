@@ -1,30 +1,29 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { IntegrationInterface } from 'src/integration.spec.service';
+import { IntegrationInterface } from 'src/interfaces/integrations.interface';
+import axios from 'axios';
 
 @Injectable()
-export class ReverseGeocodeService implements IntegrationInterface {
+export default class ReverseGeocodeService implements IntegrationInterface {
   private accessToken;
+  private log= new Logger(ReverseGeocodeService.name);
+
   constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
   ) {
-    this.accessToken = this.configService.get<string>('MAPBOX_API_KEY');
+    this.accessToken = process.env.MAPBOX_API_KEY;
   }
 
   async get(lat: number, lon: number): Promise<any> {
     const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json`;
 
-    const response = await firstValueFrom(
-      this.httpService.get(url, {
-        params: {
-          access_token: this.accessToken,
-        },
-      }),
-    );
-
-    return response.data;
+    return axios.get(url, {
+      params: {
+        access_token: this.accessToken,
+      },
+    })
+    .then(resp=> resp.data)
+    .catch(err=> this.log.error(err));
   }
 }
