@@ -12,6 +12,7 @@ interface LocationContextType {
   notifications: Notifications.Notification[];
   userId: string | null;
   isTracking: boolean;
+  isLoading: boolean;
   startTracking: () => Promise<void>;
   stopTracking: () => Promise<void>;
   clearNotifications: () => Promise<void>;
@@ -22,6 +23,7 @@ const LocationContext = createContext<LocationContextType>({
   notifications: [],
   userId: null,
   isTracking: false,
+  isLoading: false,
   startTracking: async () => {},
   stopTracking: async () => {},
   clearNotifications: async () => {},
@@ -33,6 +35,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [userId, setUserId] = useState<string | null>(null);
 
   const [isTracking, setIsTracking] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [lastLocation, setLastLocation] = useState<Location.LocationObject | null>(null);
 
   const [permissionsGranted, setPermissionsGranted] = useState(false);
@@ -59,7 +62,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const { notifGranted, fgGranted, bgGranted: initBgGranted } =
         await requestAllPermissionsNoAlerts();
 
-      // 4. If background was initially denied, wait & re-check in case user selected “Always”
+      // 4. If background was initially denied, wait & re-check in case user selected "Always"
       let bgGranted = initBgGranted;
       if (!bgGranted && Platform.OS === 'ios') {
         // Wait 3 seconds
@@ -80,7 +83,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!bgGranted && Platform.OS === 'ios') {
         Alert.alert(
           'Background Location Denied',
-          'Please enable “Always” in Settings > Privacy > Location Services > Bishop.'
+          'Please enable "Always" in Settings > Privacy > Location Services > Bishop.'
         );
       }
 
@@ -131,6 +134,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.log('startTracking => blocked, not fully granted');
       return;
     }
+    setIsLoading(true);
     try {
       // Start background location
       await Location.startLocationUpdatesAsync(BACKGROUND_TASK_NAME, {
@@ -158,16 +162,24 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (err) {
       console.error('startTracking error =>', err);
       Alert.alert('Tracking Error', 'Failed to start location tracking.');
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const stopTracking = async () => {
+    setIsLoading(true);
     try {
       await Location.stopLocationUpdatesAsync(BACKGROUND_TASK_NAME);
       setIsTracking(false);
       console.log('📍 Tracking stopped');
     } catch (error) {
       console.error('stopTracking error =>', error);
+      Alert.alert('Error', 'Failed to stop location tracking. Please try again.');
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -175,13 +187,14 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       await AsyncStorage.setItem('lastKnownLocation', JSON.stringify(location));
       if (userId) {
-        await axios.post('YOUR_BACKEND_ENDPOINT/locations', {
+        const payload = {
           userId,
           coords: location.coords,
           timestamp: new Date().toISOString(),
-        });
+        };
+        console.log('📍 Location Update Payload:', payload);
+        await axios.post('YOUR_BACKEND_ENDPOINT/locations', payload);
       }
-      console.log('📍 Foreground location =>', location);
     } catch (err) {
       console.error('handleLocationUpdate error =>', err);
     }
@@ -190,13 +203,13 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const setupNotifications = async () => {
     try {
       const token = (await Notifications.getExpoPushTokenAsync()).data;
-      console.log('📬 Expo Push Token =>', token);
-
       if (userId) {
-        await axios.post('YOUR_BACKEND_ENDPOINT/register-device', {
+        const payload = {
           userId,
           token,
-        });
+        };
+        console.log('📬 Device Registration Payload:', payload);
+        await axios.post('YOUR_BACKEND_ENDPOINT/register-device', payload);
       }
       Notifications.addNotificationReceivedListener(handleNewNotification);
     } catch (error) {
@@ -226,11 +239,16 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const clearNotifications = async () => {
+    setIsLoading(true);
     try {
       await AsyncStorage.removeItem('notifications');
       setNotifications([]);
     } catch (err) {
       console.error('clearNotifications error =>', err);
+      Alert.alert('Error', 'Failed to clear notifications. Please try again.');
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -244,6 +262,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         notifications,
         userId,
         isTracking,
+        isLoading,
         startTracking,
         stopTracking,
         clearNotifications,

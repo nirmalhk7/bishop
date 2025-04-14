@@ -10,18 +10,20 @@ TaskManager.defineTask(BACKGROUND_TASK_NAME, async ({ data, error }) => {
     console.error('Background location task error:', error);
     return;
   }
+
   if (data) {
     const { locations } = data as { locations: LocationObject[] };
-    console.log('Background locations:', locations);
     try {
       const userId = await AsyncStorage.getItem('userId');
       if (userId) {
         for (const location of locations) {
-          await axios.post('YOUR_BACKEND_ENDPOINT/locations', {
+          const payload = {
             userId,
             coords: location.coords,
             timestamp: new Date(location.timestamp).toISOString(),
-          });
+          };
+          console.log('📍 Background Location Payload:', payload);
+          await axios.post('YOUR_BACKEND_ENDPOINT/locations', payload);
         }
       }
     } catch (err) {
