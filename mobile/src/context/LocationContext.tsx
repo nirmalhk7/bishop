@@ -202,15 +202,22 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setupNotifications = async () => {
     try {
-      const token = (await Notifications.getExpoPushTokenAsync()).data;
-      if (userId) {
-        const payload = {
-          userId,
-          token,
-        };
-        console.log('📬 Device Registration Payload:', payload);
-        await axios.post('YOUR_BACKEND_ENDPOINT/register-device', payload);
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Notification permission denied');
+        return;
       }
+
+      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      
+      // Register the device with your backend
+      await axios.post('YOUR_BACKEND_URL/api/notifications/register', {
+        userId,
+        pushToken: token,
+        platform: Platform.OS,
+      });
+
+      // Set up notification listener
       Notifications.addNotificationReceivedListener(handleNewNotification);
     } catch (error) {
       console.error('setupNotifications error =>', error);

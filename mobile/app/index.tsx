@@ -12,7 +12,17 @@ import {
 } from 'react-native';
 import { useLocation } from '../src/context/LocationContext';
 import * as Location from 'expo-location';
+import * as Notifications from 'expo-notifications';
 import { Ionicons } from '@expo/vector-icons';
+
+// Configure local notifications
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 export default function HomeScreen() {
   const { 
@@ -25,6 +35,18 @@ export default function HomeScreen() {
     lastLocation 
   } = useLocation();
   const [locationName, setLocationName] = useState<string>('No location yet');
+
+  // Set up notification listener
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(handleNewNotification);
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const handleNewNotification = (notification: Notifications.Notification) => {
+    console.log('Received notification:', notification);
+  };
 
   // Reverse geocode the last location to get a human-readable address
   useEffect(() => {
@@ -95,6 +117,7 @@ export default function HomeScreen() {
   const stopTrackingColor = '#F44336';
   const clearNotificationsColor = '#2196F3';
   const cardBorderColor = '#2A2A2A';
+  const locationCardBorderColor = '#FFA500'; // Darker yellow (Orange) for location card
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
@@ -133,14 +156,26 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.card, { backgroundColor: cardBackground, borderColor: cardBorderColor }]}>
+      <View style={[styles.card, { 
+        backgroundColor: cardBackground, 
+        borderColor: locationCardBorderColor,
+        borderWidth: 2,
+        shadowColor: locationCardBorderColor,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 4,
+        elevation: 5
+      }]}>
         <Text
           style={[
             styles.locationText,
-            { color: textColor }
+            { 
+              color: textColor,
+              fontSize: 18
+            }
           ]}
         >
-          Last Location: {locationName}
+          <Text style={{ fontWeight: 'bold' }}>Last Location:</Text> {locationName}
         </Text>
       </View>
 
