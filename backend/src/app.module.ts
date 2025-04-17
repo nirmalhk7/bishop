@@ -9,6 +9,7 @@ import { HttpModule } from '@nestjs/axios';
 import { CoordinatesController } from './coordinates.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { IntegrationMgmtService } from './integrationmgmt.service';
+import { ChatGptModule } from './chatgpt/chatgpt.module';
 
 import { ScheduleModule } from '@nestjs/schedule';
 
@@ -19,6 +20,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       isGlobal: true,
     }),
     HttpModule,
+    ChatGptModule,
     IntegrationsModule,
   ],
   controllers: [AppController, CoordinatesController],
