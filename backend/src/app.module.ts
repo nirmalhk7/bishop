@@ -1,5 +1,10 @@
 import { Crypto } from '@peculiar/webcrypto';
-global.crypto = new Crypto();
+Object.defineProperty(global, 'crypto', {
+  value: new Crypto(),
+  configurable: true,
+  enumerable: true,
+  writable: true
+});
 
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -9,7 +14,6 @@ import { HttpModule } from '@nestjs/axios';
 import { CoordinatesController } from './coordinates.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { IntegrationMgmtService } from './integrationmgmt.service';
-
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsModule } from './notifications/notifications.module';
 
