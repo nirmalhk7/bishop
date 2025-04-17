@@ -1,5 +1,5 @@
+import { Coordinates } from "./global.interface";
 
 export interface IntegrationInterface {
-  get?(lat: number, lon: number): Promise<any>;
-  directions?(start: { lat: number, lon: number }, end: { lat: number, lon: number }): Promise<any>;
+  get(start: Coordinates, end: Coordinates): Promise<any>;
 }

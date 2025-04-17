@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { IntegrationInterface } from 'src/interfaces/integrations.interface';
 import axios from 'axios';
+import { Coordinates } from 'src/interfaces/global.interface';
 
 @Injectable()
 export default class GoogleCalendarService implements IntegrationInterface {
@@ -14,7 +15,7 @@ export default class GoogleCalendarService implements IntegrationInterface {
   }
   private log= new Logger(GoogleCalendarService.name);
 
-  async get(lat: number, lon: number): Promise<any> {
+  async get(start: Coordinates, end: Coordinates): Promise<any> {
     const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 
     return await axios.get(url, {
