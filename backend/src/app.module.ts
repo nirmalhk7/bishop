@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { CoordinatesController } from './coordinates.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
     }),
     HttpModule,
     IntegrationsModule,
+    NotificationsModule,
   ],
   controllers: [AppController, CoordinatesController],
   providers: [AppService],

@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { ServerResponse } from 'http';
 import { IntegrationInterface } from './interfaces/integrations.interface';
-import requireFromString from 'require-from-string';
+import { NotificationsService } from './notifications/notifications.service';
 
 class Test {
   get() {
@@ -27,9 +27,9 @@ export class CoordinatesController {
     private readonly appService: AppService,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {
-    // TODO Replace this with .env value
-    this.MODEL_URL = 'http://localhost:5001';
+    this.MODEL_URL = this.configService.get<string>('MODEL_API_URL');
   }
 
   private resolveModulePath(endpointPath: string): string {
@@ -59,19 +59,18 @@ export class CoordinatesController {
       .then(() => {
         if (req.body.no_predict === true) {
           res.status(200).json({ data: 'Coordinates recorded' });
-          return Promise.resolve(null); // Ensure the chain returns a Promise
+          return Promise.resolve(null);
         }
         return this.httpService.axiosRef.get(
           `${this.MODEL_URL}/model/coordinates`,
         );
       })
       .then(async (resp) => {
-        // Assuming the response body contains the array of coordinates
         if (!resp || !resp.data) {
-          return res
-            .status(500)
-            .json({ error: 'Invalid response received from the model.' });
+          this.log.warn('No response from model server, returning current coordinates');
+          return res.status(200).json({ currentCoordinates });
         }
+        
         const predictedCoordinates = resp.data;
         const settings = this.appService.getSettings();
 
@@ -79,26 +78,20 @@ export class CoordinatesController {
           try {
             const results = await Promise.all(
               settings.endpoints.map(async (endpoint) => {
-                const resolvedPath = this.resolveModulePath(endpoint.path); // Resolve the absolute path
+                const resolvedPath = this.resolveModulePath(endpoint.path);
                 const module = await import(resolvedPath);
-                const IntegrationClass = module.default; // Assuming default export
+                const IntegrationClass = module.default;
 
-                if (
-                  !IntegrationClass ||
-                  typeof IntegrationClass !== 'function'
-                ) {
+                if (!IntegrationClass || typeof IntegrationClass !== 'function') {
                   throw new Error(
                     `The module at ${resolvedPath} does not export a valid class.`,
                   );
                 }
 
-                const instance: IntegrationInterface = new IntegrationClass(); // Create an instance
-                const temp= new Test();
+                const instance: IntegrationInterface = new IntegrationClass();
+                const temp = new Test();
 
-                if (
-                  endpoint.method == 'get' &&
-                  typeof instance.get === 'function'
-                ) {
+                if (endpoint.method == 'get' && typeof instance.get === 'function') {
                   console.log(888, instance, temp);
                   instance.get(
                     predictedCoordinates.lat,
@@ -126,9 +119,7 @@ export class CoordinatesController {
             res.status(200).json({ results });
           } catch (err) {
             this.log.error(`Error loading endpoints: ${err.message}`);
-            res
-              .status(500)
-              .json({ error: 'Failed to process integration endpoints.' });
+            res.status(200).json({ currentCoordinates });
           }
         } else {
           res.status(200).json({ currentCoordinates });
@@ -136,9 +127,7 @@ export class CoordinatesController {
       })
       .catch((err) => {
         this.log.error(err);
-        return res
-          .status(500)
-          .json({ error: 'An error occurred while processing the request.' });
+        return res.status(200).json({ currentCoordinates });
       });
   }
 }

@@ -15,15 +15,6 @@ import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import { Ionicons } from '@expo/vector-icons';
 
-// Configure local notifications
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
-
 export default function HomeScreen() {
   const { 
     notifications, 
@@ -32,21 +23,9 @@ export default function HomeScreen() {
     startTracking, 
     stopTracking, 
     clearNotifications, 
-    lastLocation 
+    lastLocation
   } = useLocation();
   const [locationName, setLocationName] = useState<string>('No location yet');
-
-  // Set up notification listener
-  useEffect(() => {
-    const subscription = Notifications.addNotificationReceivedListener(handleNewNotification);
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  const handleNewNotification = (notification: Notifications.Notification) => {
-    console.log('Received notification:', notification);
-  };
 
   // Reverse geocode the last location to get a human-readable address
   useEffect(() => {
@@ -181,22 +160,30 @@ export default function HomeScreen() {
 
       <FlatList
         data={notifications}
-        keyExtractor={(item) => item.request.identifier}
+        keyExtractor={(item) => {
+          // Create a stable key using the identifier and timestamp
+          const identifier = item.request.identifier || '';
+          const timestamp = item.date || Date.now();
+          return `${identifier}-${timestamp}`;
+        }}
         renderItem={({ item }) => (
           <View style={[styles.card, { backgroundColor: cardBackground, borderColor: cardBorderColor }]}>
             <View style={styles.notificationItem}>
-              <Text style={[styles.title, { color: textColor }]}>
+              <Text style={[styles.notificationTitle, { color: textColor }]}>
                 {item.request.content.title}
               </Text>
-              <Text style={{ color: textColor }}>
+              <Text style={[styles.notificationBody, { color: textColor }]}>
                 {item.request.content.body}
+              </Text>
+              <Text style={[styles.notificationTime, { color: textColor }]}>
+                {new Date(item.date).toLocaleString()}
               </Text>
             </View>
           </View>
         )}
         ListEmptyComponent={
           <View style={[styles.card, { backgroundColor: cardBackground, borderColor: cardBorderColor }]}>
-            <Text style={[styles.empty, { color: textColor }]}>
+            <Text style={[styles.emptyText, { color: textColor }]}>
               No notifications yet
             </Text>
           </View>
@@ -263,17 +250,28 @@ const styles = StyleSheet.create({
   notificationItem: {
     padding: 16,
   },
-  title: {
+  notificationTitle: {
     fontWeight: '500',
     marginBottom: 4,
   },
-  empty: {
-    textAlign: 'center',
-    padding: 16,
+  notificationBody: {
+    textAlign: 'left',
+  },
+  notificationTime: {
+    textAlign: 'right',
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 4,
   },
   locationText: {
     textAlign: 'center',
     fontSize: 16,
     padding: 16,
+  },
+  emptyText: {
+    textAlign: 'center',
+    padding: 16,
+    fontSize: 16,
+    fontStyle: 'italic',
   }
 });

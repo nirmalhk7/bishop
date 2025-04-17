@@ -18,12 +18,11 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "location",
-          "remote-notification",
           "fetch"
         ],
-        "NSLocationWhenInUseUsageDescription": "We need your location to provide location-based predictions.",
-        "NSLocationAlwaysUsageDescription": "We need your location in the background for real-time tracking.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "We need your location at all times.",
+        "NSLocationWhenInUseUsageDescription": "Bishop needs your location to track your movements.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Bishop needs your location to track your movements in the background.",
+        "NSLocationAlwaysUsageDescription": "Bishop needs your location to track your movements in the background.",
         "ITSAppUsesNonExemptEncryption": false,
         "NSUserNotificationUsageDescription": "We need to send you notifications about your location updates.",
         "NSUserNotificationAlertStyle": "banner"
@@ -39,7 +38,8 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "NOTIFICATIONS"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -98,6 +98,13 @@
     "owner": "sanjayb-28",
     "updates": {
       "url": "https://u.expo.dev/930fa826-63b1-42f0-b3c8-43a76aecb4b0"
+    },
+    "notification": {
+      "icon": "./assets/images/icon.png",
+      "color": "#ffffff",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Bishop",
+      "iosDisplayInForeground": true
     }
   }
 }

@@ -1,4 +1,3 @@
-
 print("Whirring the engines ...")
 from flask import Flask, request, jsonify
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -11,10 +10,12 @@ from flask_apscheduler import APScheduler
 from bigquery import BigQueryI
 from bishopmodel import BishopModel
 import pandas as pd
+from flask_cors import CORS
 
 print("Imports completed ...")
 bishop = BishopModel()
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 scheduler = APScheduler()
 bq = BigQueryI()
 
@@ -77,4 +78,4 @@ def hello():
 if __name__ == '__main__':
     scheduler.init_app(app)
     scheduler.start()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
