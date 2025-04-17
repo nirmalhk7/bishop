@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { IntegrationInterface } from 'src/interfaces/integrations.interface';
 import axios from "axios"
+import { Coordinates } from 'src/interfaces/global.interface';
 
 @Injectable()
 export default class MapDirectionsService implements IntegrationInterface {
@@ -14,12 +15,9 @@ export default class MapDirectionsService implements IntegrationInterface {
   }
   private log= new Logger(MapDirectionsService.name);
 
-  async directions(
-    start: { lat: number; lon: number },
-    end: { lat: number; lon: number },
-  ): Promise<any> {
+  async get(start: Coordinates, end: Coordinates): Promise<any> {
     const coordinates = `${start.lon},${start.lat};${end.lon},${end.lat}`;
-    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}`;
+    const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}`;
 
     return axios.get(url, {
       params: {
@@ -30,6 +28,10 @@ export default class MapDirectionsService implements IntegrationInterface {
       },
     })
     .then(resp=> resp.data)
+    .then(resp=>({
+      distance: resp[0].distance,
+      duration: resp[0].duration
+    }))
     .catch(err=> this.log.error(err));
   }
 }

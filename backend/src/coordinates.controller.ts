@@ -5,6 +5,10 @@ import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { ServerResponse } from 'http';
 import { IntegrationInterface } from './interfaces/integrations.interface';
+import { IntegrationMgmtService } from './integrationmgmt.service';
+import { Coordinates } from './interfaces/global.interface';
+import { AxiosResponse } from 'axios';
+import { Cron } from '@nestjs/schedule';
 import { NotificationsService } from './notifications/notifications.service';
 
 class Test {
@@ -24,33 +28,36 @@ export class CoordinatesController {
   private log = new Logger(CoordinatesController.name);
 
   constructor(
-    private readonly appService: AppService,
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
+    private readonly integrationMgmtService: IntegrationMgmtService,
     private readonly notificationsService: NotificationsService,
   ) {
     this.MODEL_URL = this.configService.get<string>('MODEL_API_URL');
   }
 
-  private resolveModulePath(endpointPath: string): string {
-    const basePath =
-      process.env.NODE_ENV === 'production'
-        ? require('path').join(__dirname, '..', '..', 'src')
-        : require('path').join(__dirname);
-    return require('path').resolve(basePath, endpointPath);
+  @Cron('* * * * *') // Runs every minute
+  async handleCron() {
+    
+    this.log.log('Running scheduled task to fetch coordinates.');
+    return Promise.all([
+      this.httpService.axiosRef.get(
+        `${this.MODEL_URL}/model/coordinates/latest`,
+      ),
+      this.httpService.axiosRef.get(`${this.MODEL_URL}/model/coordinates`),
+    ]).then(([resp1, resp2])=>{
+      const current: Coordinates= resp1.data;
+      const predict: Coordinates= resp2.data;
+      return this.integrationMgmtService.runSvcs(current, predict)
+    }).catch(err=> this.log.error(err));
   }
 
-  /**
-   * Post coordinates to model
-   * Get predicted coordinates from model
-   */
   @Post('/')
   runPrediction(@Req() req: Request<HTTPPredictionI>, @Res() res: Response) {
     const currentCoordinates = {
       lat: req.body.latitude,
       lon: req.body.longitude,
     };
-    
+
     return this.httpService.axiosRef
       .post(`${this.MODEL_URL}/model/coordinates`, {
         latitude: currentCoordinates.lat,
