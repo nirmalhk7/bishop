@@ -5,7 +5,10 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "esModuleInterop": true,
+    "jsx": "react-native",
+    "noImplicitAny": false
   },
   "include": [
     "**/*.ts",

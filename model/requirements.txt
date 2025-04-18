@@ -3,3 +3,4 @@ faker
 google-cloud-bigquery
 flask-apscheduler
 tensorflow
+flask-cors
