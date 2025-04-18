@@ -5,6 +5,7 @@ import * as crypto from 'crypto'; // Import the crypto module
 async function bootstrap() {
   
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  app.enableCors();
+  await app.listen(3000, '0.0.0.0');
 }
 bootstrap();
