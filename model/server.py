@@ -35,16 +35,16 @@ def scheduled_job():
             "latitude": latitude,
             "longitude": longitude
             })
-
         # Convert processed_rows to a DataFrame
         processed_rows = pd.DataFrame(processed_rows)
-        
         processed_rows= bishop.process_and_train()
-        
-        
     except Exception as e:
         print(f"Error in scheduled job: {str(e)}")
         return None
+
+@app.route('/model/coordinates/predict',method=['GET'])
+def predict_coordinates():
+    print("Prediction Endpoint")
 
 @app.route('/model/coordinates', methods=['GET'])
 def get_coordinates():
@@ -54,6 +54,7 @@ def get_coordinates():
         return jsonify(coordinates), 200
     except Exception as e:
         return jsonify({"error": f"Failed to retrieve coordinates: {str(e)}"}), 500
+
 
 @app.route('/model/coordinates', methods=['POST'])
 def add_coordinates():

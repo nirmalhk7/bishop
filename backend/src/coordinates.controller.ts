@@ -25,7 +25,7 @@ export class CoordinatesController {
     private readonly integrationMgmtService: IntegrationMgmtService,
   ) {
     // TODO Replace this with .env value
-    this.MODEL_URL = 'http://localhost:5001';
+    this.MODEL_URL = process.env.MODEL_BACKEND;
   }
 
   @Cron('* * * * *') // Runs every minute
@@ -41,7 +41,7 @@ export class CoordinatesController {
       const current: Coordinates= resp1.data;
       const predict: Coordinates= resp2.data;
       return this.integrationMgmtService.runSvcs(current, predict)
-    }).catch(err=> this.log.error(err));
+    }).catch(err => this.log.error(err.message));
   }
 
   @Post('/')
