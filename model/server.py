@@ -11,16 +11,17 @@ from bigquery import BigQueryI
 from bishopmodel import BishopModel
 import pandas as pd
 from flask_cors import CORS
+from cloudstorage import CloudStorageI
 
 print("Imports completed ...")
 bishop = BishopModel()
+cloudstorage = CloudStorageI("bdarch-bishop-models")
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 scheduler = APScheduler()
 bq = BigQueryI()
 
-# Add job to scheduler
-# Format: second, minute, hour, day, month, day_of_week
+# Scheduled Task
 @scheduler.task('cron', id='training_job', second='*')  # Runs every second
 def scheduled_job():
     print("Running scheduled job to fetch data from BigQuery...")
@@ -38,14 +39,62 @@ def scheduled_job():
         # Convert processed_rows to a DataFrame
         processed_rows = pd.DataFrame(processed_rows)
         processed_rows= bishop.process_and_train()
+        bishop.save_model(base_path='~/MODEL')
+        
     except Exception as e:
         print(f"Error in scheduled job: {str(e)}")
         return None
 
-@app.route('/model/coordinates/predict',method=['GET'])
-def predict_coordinates():
-    print("Prediction Endpoint")
+def convert_timestamp_to_minutes(time_query: str):
+    if not time_query:
+        raise Exception("Missing 'time' in query parameter")
+    try:
+        time_values = time_query.split(',')
+        time_in_minutes = []
 
+        for time_value in time_values:
+            if time_value.endswith('m'):
+                time_in_minutes.append(int(time_value[:-1]))
+            elif time_value.endswith('h'):
+                time_in_minutes.append(int(time_value[:-1]) * 60)
+            elif time_value.endswith('d'):
+                time_in_minutes.append(int(time_value[:-1]) * 1440)
+            else:
+                raise Exception(f"Invalid time format: {time_value}")
+        return time_in_minutes
+    except ValueError:
+        raise Exception("Invalid time values provided")
+
+# Run prediction
+@app.route('/model/coordinates/predict', methods=['GET'])
+def predict_coordinates():
+    time_query = request.args.get('time')
+    time_in_minutes=[]
+    try:
+        time_in_minutes= convert_timestamp_to_minutes(time_query)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    
+    # Training
+    rows = bq.fetch_recent_data()
+    processed_rows = []
+
+    for row in rows:
+        longitude, latitude = map(float, row['coordinates'].split())
+        processed_rows.append({
+        "timestamp": row["timestamp"],
+        "latitude": latitude,
+        "longitude": longitude
+        })
+        
+    processed_rows = pd.DataFrame(processed_rows)
+    processed_rows= bishop.process_and_train()
+    
+    # Prediction
+    return bishop.evaluate_model(processed_rows)
+
+
+# Get all coordinates
 @app.route('/model/coordinates', methods=['GET'])
 def get_coordinates():
     try:
@@ -56,6 +105,7 @@ def get_coordinates():
         return jsonify({"error": f"Failed to retrieve coordinates: {str(e)}"}), 500
 
 
+# Insert coordinate
 @app.route('/model/coordinates', methods=['POST'])
 def add_coordinates():
     data = request.json
@@ -64,14 +114,13 @@ def add_coordinates():
 
     if latitude is None or longitude is None:
         return jsonify({"error": "Invalid input"}), 400
-
     errors = bq.insert_coordinates(latitude, longitude)
-
     if errors:
         return jsonify({"error": "Failed to insert data into BigQuery", "details": errors}), 500
 
     return jsonify({"message": "Coordinates added successfully"}), 201
 
+# Test endpoint
 @app.route('/model/hello', methods=["GET"])
 def hello():
     return jsonify({"message": "Hello World"}), 200

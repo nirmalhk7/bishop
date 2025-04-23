@@ -6,6 +6,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import pickle
+import os
 
 def generate_synthetic_data(num_samples=15000, base_lat=40.0190, base_lon=105.2747):
     """Generate basic synthetic location data with timestamps."""
@@ -124,6 +125,32 @@ class BishopModel:
         
         return predictions, actual
 
+    def predict(self, timestamps):
+        """Predict coordinates for given timestamps."""
+        # Create a DataFrame for the input timestamps
+        df = pd.DataFrame({'timestamp': pd.to_datetime(timestamps)})
+        
+        # Add time-based features
+        df = self.add_time_features(df)
+        
+        # Scale the features
+        scaled_features = self.scaler_features.transform(df[['minute_of_day', 'day_of_week']])
+        
+        # Prepare sequences for prediction
+        X = []
+        for i in range(len(scaled_features) - self.sequence_length + 1):
+            X.append(scaled_features[i:i+self.sequence_length])
+        
+        X = np.array(X)
+        
+        # Make predictions
+        predictions = self.model.predict(X)
+        
+        # Inverse transform the predictions to get original scale
+        predicted_coordinates = self.scaler_targets.inverse_transform(predictions)
+        
+        return predicted_coordinates
+
     @staticmethod
     def haversine_distance(lat1, lon1, lat2, lon2):
         """Calculate distance between two points on Earth using Haversine formula."""
@@ -140,7 +167,11 @@ class BishopModel:
         return R * c
 
     def save_model(self, base_path='/content/drive/MyDrive/DevWorld/bdarch'):
-        """Save the model and scalers to disk."""
+        """Save the model and scalers to disk, creating the folder if it doesn't exist."""
+
+        # Ensure the directory exists
+        os.makedirs(base_path, exist_ok=True)
+
         model_save_path = f'{base_path}/location_prediction_model.pkl'
         scaler_features_save_path = f'{base_path}/location_prediction_scaler_features.pkl'
         scaler_targets_save_path = f'{base_path}/location_prediction_scaler_targets.pkl'
