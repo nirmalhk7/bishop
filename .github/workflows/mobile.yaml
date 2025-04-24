@@ -1,6 +1,9 @@
 name: Build and Publish Mobile APK
 
-
+on:
+  push:
+    paths:
+      - '*'
 
 jobs:
   build-and-publish:
