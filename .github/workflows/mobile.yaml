@@ -27,7 +27,7 @@ jobs:
 
       # Log in to Expo
       - name: Log in to Expo
-        run: npx expo login -u nirmalhk7 -p ${{ secrets.EXPO_PASSWORD }}
+        run: npx expo login -u nirmalhk7 -p "${{ secrets.EXPO_PASSWORD }}"
 
       # Build the APK
       - name: Build APK
