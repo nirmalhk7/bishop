@@ -1,0 +1,53 @@
+name: Build and Publish Mobile APK
+
+on:
+  push:
+    paths:
+      - 'mobile/**'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Install dependencies
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm install
+
+      # Log in to Expo
+      - name: Log in to Expo
+        run: npx expo login -u ${{ secrets.EXPO_USERNAME }} -p ${{ secrets.EXPO_PASSWORD }}
+
+      # Build the APK
+      - name: Build APK
+        working-directory: mobile
+        run: npx eas build --platform android --profile production --non-interactive
+        env:
+          EAS_BUILD_ACCESS_TOKEN: ${{ secrets.EAS_BUILD_ACCESS_TOKEN }}
+
+      # Download the APK
+      - name: Download APK
+        run: |
+          mkdir -p artifacts
+          npx eas build:download --platform android --path artifacts/app.apk
+        working-directory: mobile
+
+      # Upload the APK as a release asset
+      - name: Upload APK to GitHub Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: mobile/artifacts/app.apk
+          asset_name: bishop.apk
+          asset_content_type: application/vnd.android.package-archive
