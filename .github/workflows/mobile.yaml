@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: 18
 
+      - name: Verify dependencies
+        working-directory: mobile
+        run: ls -la node_modules
+        
       # Install dependencies
       - name: Install dependencies
         working-directory: mobile
