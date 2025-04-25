@@ -14,6 +14,7 @@ import { HttpModule } from '@nestjs/axios';
 import { CoordinatesController } from './coordinates.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { IntegrationMgmtService } from './integrationmgmt.service';
+import { OpenAIService } from './openai.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsModule } from './notifications/notifications.module';
 
@@ -28,6 +29,6 @@ import { NotificationsModule } from './notifications/notifications.module';
     NotificationsModule,
   ],
   controllers: [AppController, CoordinatesController],
-  providers: [AppService, IntegrationMgmtService],
+  providers: [AppService, IntegrationMgmtService, OpenAIService],
 })
 export class AppModule {}
