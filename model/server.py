@@ -10,14 +10,12 @@ from flask_apscheduler import APScheduler
 from bigquery import BigQueryI
 from bishopmodel import BishopModel
 import pandas as pd
-from flask_cors import CORS
 from cloudstorage import CloudStorageI
 
 print("Imports completed ...")
 bishop = BishopModel()
 cloudstorage = CloudStorageI("bdarch-bishop-models")
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
 scheduler = APScheduler()
 bq = BigQueryI()
 
@@ -38,7 +36,9 @@ def scheduled_job():
             })
         # Convert processed_rows to a DataFrame
         processed_rows = pd.DataFrame(processed_rows)
-        processed_rows= bishop.process_and_train()
+        # Ensure the timestamp column is in datetime format
+        processed_rows['timestamp'] = pd.to_datetime(processed_rows['timestamp'])
+        bishop.process_and_train(processed_rows)
         bishop.save_model(base_path='~/MODEL')
         
     except Exception as e:
