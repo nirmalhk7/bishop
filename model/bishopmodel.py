@@ -146,48 +146,55 @@ class BishopModel:
     #     return predictions, actual
 
     def predict(self, prediction_request: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Predict coordinates for given timestamps."""
+        """Predict coordinates for each prediction request."""
         logging.info("Predicting coordinates for %d requests", len(prediction_request))
         if not hasattr(self.scaler_features, 'data_min_') or not hasattr(self.scaler_targets, 'data_min_'):
             logging.error("Scalers are not fitted. Train the model first or load the scalers.")
             raise ValueError("Scalers are not fitted. Train the model first or load the scalers.")
 
-        timestamps = [pd.to_datetime(req["timestamp"]) for req in prediction_request]
-        current_coords = [(req["current_lat"], req["current_long"]) for req in prediction_request]
+        results = []
+        for req in prediction_request:
+            # Extract timestamp and current coordinates
+            timestamp = pd.to_datetime(req["timestamp"])
+            current_coords = (req["current_lat"], req["current_long"])
 
-        df = pd.DataFrame({
-            'timestamp': timestamps,
-            'latitude': [coord[0] for coord in current_coords],
-            'longitude': [coord[1] for coord in current_coords]
-        })
+            # Create a DataFrame for the single request
+            df = pd.DataFrame({
+                'timestamp': [timestamp],
+                'latitude': [current_coords[0]],
+                'longitude': [current_coords[1]]
+            })
 
-        df = self.add_time_features(df)
-        predict_scaled_features = self.scaler_features.transform(df[['latitude', 'longitude', 'minute_of_day', 'day_of_week']])
+            # Add time features
+            df = self.add_time_features(df)
 
-        # Ensure the input has the correct shape for LSTM
-        if len(predict_scaled_features) < self.sequence_length:
-            logging.warning("Input data length (%d) is less than sequence length (%d). Padding input.", 
-                            len(predict_scaled_features), self.sequence_length)
-            padding = np.zeros((self.sequence_length - len(predict_scaled_features), predict_scaled_features.shape[1]))
-            predict_scaled_features = np.vstack([padding, predict_scaled_features])
-        else:
-            predict_scaled_features = predict_scaled_features[-self.sequence_length:]
+            # Scale features
+            predict_scaled_features = self.scaler_features.transform(df[['latitude', 'longitude', 'minute_of_day', 'day_of_week']])
 
-        X = np.expand_dims(predict_scaled_features, axis=0)  # Reshape to (1, sequence_length, num_features)
-        logging.debug("Prepared input for prediction: %s", X.shape)
+            # Ensure the input has the correct shape for LSTM
+            if len(predict_scaled_features) < self.sequence_length:
+                logging.warning("Input data length (%d) is less than sequence length (%d). Padding input.", 
+                                len(predict_scaled_features), self.sequence_length)
+                padding = np.zeros((self.sequence_length - len(predict_scaled_features), predict_scaled_features.shape[1]))
+                predict_scaled_features = np.vstack([padding, predict_scaled_features])
+            else:
+                predict_scaled_features = predict_scaled_features[-self.sequence_length:]
 
-        predictions = self.model.predict(X)
-        predicted_coordinates = self.scaler_targets.inverse_transform(predictions)
+            X = np.expand_dims(predict_scaled_features, axis=0)  # Reshape to (1, sequence_length, num_features)
+            logging.debug("Prepared input for prediction: %s", X.shape)
 
-        results = [
-            {
-                "timestamp": timestamps[-1].isoformat(),
-                "predicted_lat": float(coord[0]),  # Convert to native float
-                "predicted_long": float(coord[1])  # Convert to native float
-            }
-            for coord in predicted_coordinates
-        ]
-        logging.info("Prediction completed")
+            # Make prediction
+            predictions = self.model.predict(X)
+            predicted_coordinates = self.scaler_targets.inverse_transform(predictions)
+
+            # Append result for this request
+            results.append({
+                "timestamp": timestamp.isoformat(),
+                "predicted_lat": float(predicted_coordinates[0][0]),  # Convert to native float
+                "predicted_long": float(predicted_coordinates[0][1])  # Convert to native float
+            })
+
+        logging.info("Prediction completed for all requests")
         return results
 
     @staticmethod

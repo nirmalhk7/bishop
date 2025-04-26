@@ -21,7 +21,7 @@ scheduler = APScheduler()
 bq = BigQueryI()
 
 # Scheduled Task
-@scheduler.task('interval', id='training_job', seconds=10) 
+@scheduler.task('interval', id='training_job', seconds=20) 
 def scheduled_job():
     print("Running scheduled job to fetch data from BigQuery...")
     rows = bq.fetch_recent_data()
