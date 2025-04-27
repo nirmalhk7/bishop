@@ -11,7 +11,7 @@ class BigQueryI:
         # Load environment variables from .env file
         load_dotenv()
         
-        if not os.getenv("GOOGLE_CLOUD_PROJECT"):
+        if not os.getenv("ENVIRONMENT"):
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "bdarch-bishop-model.gcp.json")
         
         # BigQuery configuration
