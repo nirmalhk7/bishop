@@ -10,8 +10,9 @@ class BigQueryI:
     def __init__(self):
         # Load environment variables from .env file
         load_dotenv()
-        
+        print("Env var", os.getenv("ENVIRONMENT"))
         if os.getenv("ENVIRONMENT")!="production":
+            print("Reading from file")
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "bdarch-bishop-model.gcp.json")
         
         # BigQuery configuration
