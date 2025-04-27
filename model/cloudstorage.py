@@ -1,8 +1,10 @@
 from google.cloud import storage
+import os
 
 class CloudStorageI:
     def __init__(self, bucket_name: str):
         self.bucket_name = bucket_name
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "bdarch-bishop-model.gcp.json"
         self.client = storage.Client()
         self.bucket = self.client.bucket(bucket_name)
 

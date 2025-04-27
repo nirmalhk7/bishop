@@ -9,73 +9,24 @@ import uuid
 from flask_apscheduler import APScheduler
 from bigquery import BigQueryI
 from bishopmodel import BishopModel
+from alternatemodel import AlternateModel
 import pandas as pd
-from flask_cors import CORS
 from cloudstorage import CloudStorageI
+from flask_cors import CORS  # Import CORS
+
 
 print("Imports completed ...")
 bishop = BishopModel()
 cloudstorage = CloudStorageI("bdarch-bishop-models")
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 scheduler = APScheduler()
 bq = BigQueryI()
 
 # Scheduled Task
-@scheduler.task('cron', id='training_job', second='*')  # Runs every second
+@scheduler.task('interval', id='training_job', seconds=20) 
 def scheduled_job():
     print("Running scheduled job to fetch data from BigQuery...")
-    try:
-        rows = bq.fetch_recent_data()
-        processed_rows = []
-
-        for row in rows:
-            longitude, latitude = map(float, row['coordinates'].split())
-            processed_rows.append({
-            "timestamp": row["timestamp"],
-            "latitude": latitude,
-            "longitude": longitude
-            })
-        # Convert processed_rows to a DataFrame
-        processed_rows = pd.DataFrame(processed_rows)
-        processed_rows= bishop.process_and_train()
-        bishop.save_model(base_path='~/MODEL')
-        
-    except Exception as e:
-        print(f"Error in scheduled job: {str(e)}")
-        return None
-
-def convert_timestamp_to_minutes(time_query: str):
-    if not time_query:
-        raise Exception("Missing 'time' in query parameter")
-    try:
-        time_values = time_query.split(',')
-        time_in_minutes = []
-
-        for time_value in time_values:
-            if time_value.endswith('m'):
-                time_in_minutes.append(int(time_value[:-1]))
-            elif time_value.endswith('h'):
-                time_in_minutes.append(int(time_value[:-1]) * 60)
-            elif time_value.endswith('d'):
-                time_in_minutes.append(int(time_value[:-1]) * 1440)
-            else:
-                raise Exception(f"Invalid time format: {time_value}")
-        return time_in_minutes
-    except ValueError:
-        raise Exception("Invalid time values provided")
-
-# Run prediction
-@app.route('/model/coordinates/predict', methods=['GET'])
-def predict_coordinates():
-    time_query = request.args.get('time')
-    time_in_minutes=[]
-    try:
-        time_in_minutes= convert_timestamp_to_minutes(time_query)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-    
-    # Training
     rows = bq.fetch_recent_data()
     processed_rows = []
 
@@ -86,12 +37,20 @@ def predict_coordinates():
         "latitude": latitude,
         "longitude": longitude
         })
-        
+    # Convert processed_rows to a DataFrame
     processed_rows = pd.DataFrame(processed_rows)
-    processed_rows= bishop.process_and_train()
-    
-    # Prediction
-    return bishop.evaluate_model(processed_rows)
+    # Ensure the timestamp column is in datetime format
+    processed_rows['timestamp'] = pd.to_datetime(processed_rows['timestamp'])
+    bishop.process_and_train(processed_rows)
+    # bishop.save_model(base_path='~/MODEL')
+
+
+# Run prediction
+@app.route('/model/coordinates/predict', methods=['GET'])
+def predict_coordinates():
+    data = request.json
+    prediction_request = data.get('prediction_request', [])
+    return bishop.predict(prediction_request)
 
 
 # Get all coordinates
@@ -123,9 +82,15 @@ def add_coordinates():
 # Test endpoint
 @app.route('/model/hello', methods=["GET"])
 def hello():
-    return jsonify({"message": "Hello World"}), 200
+    return jsonify({"message": "Hello World from the Model Server"}), 200
 
 if __name__ == '__main__':
+    print("Running the scheduled job before starting the server...")
+    if os.environ.get("RUN_SCHEDULED_JOB_ONCE") != "true":
+        print("Running the scheduled job before starting the server...")
+        scheduled_job()
+        os.environ["RUN_SCHEDULED_JOB_ONCE"] = "true"
+
     scheduler.init_app(app)
     scheduler.start()
     app.run(debug=True, host='0.0.0.0')
