@@ -10,7 +10,9 @@ class BigQueryI:
     def __init__(self):
         # Load environment variables from .env file
         load_dotenv()
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "bdarch-bishop-model.gcp.json")
+        
+        if not os.getenv("GOOGLE_CLOUD_PROJECT"):
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "bdarch-bishop-model.gcp.json")
         
         # BigQuery configuration
         self.client = bigquery.Client()
