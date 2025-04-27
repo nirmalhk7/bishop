@@ -12,11 +12,14 @@ from bishopmodel import BishopModel
 from alternatemodel import AlternateModel
 import pandas as pd
 from cloudstorage import CloudStorageI
+from flask_cors import CORS  # Import CORS
+
 
 print("Imports completed ...")
 bishop = BishopModel()
 cloudstorage = CloudStorageI("bdarch-bishop-models")
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 scheduler = APScheduler()
 bq = BigQueryI()
 
@@ -82,8 +85,6 @@ def hello():
     return jsonify({"message": "Hello World from the Model Server"}), 200
 
 if __name__ == '__main__':
-
-
     print("Running the scheduled job before starting the server...")
     if os.environ.get("RUN_SCHEDULED_JOB_ONCE") != "true":
         print("Running the scheduled job before starting the server...")
@@ -92,5 +93,4 @@ if __name__ == '__main__':
 
     scheduler.init_app(app)
     scheduler.start()
-
     app.run(debug=True, host='0.0.0.0')
