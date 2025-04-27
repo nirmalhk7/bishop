@@ -14,7 +14,13 @@ class BigQueryI:
         if os.getenv("ENVIRONMENT")!="production":
             print("Reading from file")
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "bdarch-bishop-model.gcp.json")
-        
+        if os.getenv("ENVIRONMENT") == "production":
+            prod_credentials_path = "/tmp/bdarch-bishop-prod.gcp.json"
+            with open(prod_credentials_path, "w") as prod_file:
+                prod_file.write(os.getenv("GCP_CREDENTIALS_JSON", ""))
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = prod_credentials_path
+
+
         # BigQuery configuration
         self.client = bigquery.Client()
         print("Connected to BigQuery:", self.client.project)
