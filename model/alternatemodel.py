@@ -18,6 +18,7 @@ class AlternateModel:
         lat_df = df[['timestamp', 'latitude']].rename(columns={'timestamp': 'ds', 'latitude': 'y'})
         lon_df = df[['timestamp', 'longitude']].rename(columns={'timestamp': 'ds', 'longitude': 'y'})
         
+        
         # Print lat_df as a Python array
         print(lat_df.to_numpy())
         print(lon_df.to_numpy())
