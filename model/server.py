@@ -13,7 +13,7 @@ from alternatemodel import AlternateModel
 import pandas as pd
 from cloudstorage import CloudStorageI
 from flask_cors import CORS  # Import CORS
-
+from dotenv import load_dotenv
 
 print("Imports completed ...")
 bishop = BishopModel()
@@ -22,9 +22,10 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 scheduler = APScheduler()
 bq = BigQueryI()
+load_dotenv()
 
 # Scheduled Task
-@scheduler.task('interval', id='training_job', seconds=20) 
+@scheduler.task('interval', id='training_job', seconds=int(os.getenv("COORDINATES_CRON"))) 
 def scheduled_job():
     print("Running scheduled job to fetch data from BigQuery...")
     rows = bq.fetch_recent_data()
@@ -54,11 +55,11 @@ def predict_coordinates():
 
 
 # Get all coordinates
-@app.route('/model/coordinates', methods=['GET'])
-def get_coordinates():
+@app.route('/model/coordinates/last', methods=['GET'])
+def get_last_coordinates():
     try:
         # Fetch a smaller number of coordinates for the GET endpoint
-        coordinates = bq.fetch_recent_data(limit=100)
+        coordinates = bq.fetch_recent_data(limit=1)
         return jsonify(coordinates), 200
     except Exception as e:
         return jsonify({"error": f"Failed to retrieve coordinates: {str(e)}"}), 500

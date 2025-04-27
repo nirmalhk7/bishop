@@ -28,13 +28,12 @@ export class CoordinatesController {
     this.MODEL_URL = process.env.MODEL_BACKEND;
   }
 
-  @Cron('*/10 * * * * *') // Runs every 10 seconds
+  @Cron(String(process.env.COORDINATES_CRON))
   async handleCron() {
-    
     this.log.log('Running scheduled task to fetch coordinates.');
     return Promise.all([
       this.httpService.axiosRef.get(
-        `${this.MODEL_URL}`,
+        `${this.MODEL_URL}/model/coordinates/predict`,
       ),
       this.httpService.axiosRef.get(`${this.MODEL_URL}/model/coordinates`),
     ]).then(([resp1, resp2])=>{
