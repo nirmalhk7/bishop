@@ -16,3 +16,4 @@ prophet
 tensorflow
 scikit-learn
 faker
+dotenv
