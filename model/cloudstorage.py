@@ -1,10 +1,12 @@
 from google.cloud import storage
 import os
+import logging
 
 class CloudStorageI:
     def __init__(self, bucket_name: str):
+        logging.info(CloudStorageI.__name__,"Env var", os.getenv("ENVIRONMENT"))
+        
         self.bucket_name = bucket_name
-        print(CloudStorageI.__name__,"Env var", os.getenv("ENVIRONMENT"))
         if os.getenv("ENVIRONMENT")!="production":
             print(CloudStorageI.__name__,"Reading from file")
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "bdarch-bishop-model.gcp.json"

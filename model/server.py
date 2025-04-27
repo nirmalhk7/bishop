@@ -17,7 +17,7 @@ from flask_cors import CORS  # Import CORS
 
 print("Imports completed ...")
 bishop = BishopModel()
-cloudstorage = CloudStorageI("bdarch-bishop-models")
+# cloudstorage = CloudStorageI("bdarch-bishop-models")
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 scheduler = APScheduler()
