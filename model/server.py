@@ -47,7 +47,7 @@ def scheduled_job():
 
 
 # Run prediction
-@app.route('/model/coordinates/predict', methods=['GET'])
+@app.route('/model/coordinates/predict', methods=['GET', 'POST'])
 def predict_coordinates():
     data = request.json
     prediction_request = data.get('prediction_request', [])
@@ -87,7 +87,6 @@ def hello():
     return jsonify({"message": "Hello World from the Model Server"}), 200
 
 if __name__ == '__main__':
-    print("Running the scheduled job before starting the server...")
     scheduler.init_app(app)
     scheduler.start()
     app.run(debug=True, host='0.0.0.0')
