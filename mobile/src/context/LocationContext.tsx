@@ -223,15 +223,12 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const handleLocationUpdate = async (location: Location.LocationObject) => {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.LAST_KNOWN_LOCATION, JSON.stringify(location));
-      if (userId) {
-        const payload = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          timestamp: new Date().toISOString(),
-        };
-        console.log('📍 Location Update Payload:', payload);
-        await axios.post(`${API_BASE_URL}${COORDINATES_API}`, payload);
-      }
+      const payload = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude
+      };
+      console.log('📍 Location Update Payload:', payload);
+      await axios.post(`${API_BASE_URL}${COORDINATES_API}`, payload);
     } catch (err) {
       console.error('handleLocationUpdate error =>', err);
     }
