@@ -15,6 +15,24 @@ export default class MapDirectionsService implements IntegrationInterface {
   }
   private log= new Logger(MapDirectionsService.name);
 
+  distance(current: Coordinates, predicted: Coordinates): number {
+    // Convert decimal degrees to radians
+    const toRadians = (degrees: number): number => degrees * Math.PI / 180;
+    
+    const dLat = toRadians(predicted.lat - current.lat);
+    const dLon = toRadians(predicted.lon - current.lon);
+    
+    const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(predicted.lat)) * Math.cos(toRadians(current.lat)) * 
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const earthRadiusInMiles = 3956; // Earth's radius in miles
+    
+    return earthRadiusInMiles * c;
+  }
+
   async get(start: Coordinates, end: Coordinates): Promise<any> {
     const coordinates = `${start.lon},${start.lat};${end.lon},${end.lat}`;
     const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}`;

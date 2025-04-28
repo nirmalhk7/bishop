@@ -1,8 +1,5 @@
 {
     "endpoints": [
-        {"path": "integrations/googlecalendar.service", "method": "get"},
-        {"path": "integrations/mapdirections.service", "method": "directions"},
-        {"path": "integrations/reversegeocode.service", "method": "get"},
         {"path": "integrations/weather.service", "method": "get"}
     ],
     "times":{

@@ -14,7 +14,9 @@ export default class GoogleCalendarService implements IntegrationInterface {
     this.accessToken=""
   }
   private log= new Logger(GoogleCalendarService.name);
+  public static STATUS: string = "ACTIVE";
 
+  
   async get(start: Coordinates, end: Coordinates): Promise<any> {
     const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 

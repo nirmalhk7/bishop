@@ -10,7 +10,9 @@ export class IntegrationMgmtService {
 
   constructor(private readonly appService: AppService) {}
 
-  private async loadIntegration(endpointPath: string): Promise<IntegrationInterface> {
+  private async loadIntegration(
+    endpointPath: string,
+  ): Promise<IntegrationInterface> {
     const resolvedPath = this.resolveModulePath(endpointPath);
     try {
       const module = await import(resolvedPath);
@@ -22,19 +24,25 @@ export class IntegrationMgmtService {
 
       return new IntegrationClass();
     } catch (error) {
-      this.log.error(`Failed to load integration from ${resolvedPath}: ${error.message}`);
+      this.log.error(
+        `Failed to load integration from ${resolvedPath}: ${error.message}`,
+      );
       throw error;
     }
   }
 
   private resolveModulePath(endpointPath: string): string {
-    const basePath = process.env.NODE_ENV === 'production'
-      ? path.join(__dirname, '..', '..', 'src')
-      : __dirname;
+    const basePath =
+      process.env.NODE_ENV === 'production'
+        ? path.join(__dirname, '..', '..', 'src')
+        : __dirname;
     return path.resolve(basePath, endpointPath);
   }
 
-  async runSvcs(currentCoordinates: Coordinates, predictedCoordinates: Coordinates) {
+  async runSvcs(
+    currentCoordinates: Coordinates,
+    predictedCoordinates: Coordinates,
+  ) {
     const settings = this.appService.getSettings();
     const endpoints = settings?.endpoints;
 
@@ -44,21 +52,38 @@ export class IntegrationMgmtService {
     }
 
     try {
-      return await Promise.all(
-        endpoints.map(async (endpoint) => {
-          try {
-            const integration = await this.loadIntegration(endpoint.path);
-            if (endpoint.method === 'get' && typeof integration.get === 'function') {
-              return integration.get(currentCoordinates, predictedCoordinates);
-            } else {
-              throw new Error(`Unsupported method "${endpoint.method}" or missing implementation.`);
-            }
-          } catch (error) {
-            this.log.error(`Error processing endpoint ${endpoint.path}: ${error.message}`);
-            throw error;
+      // Create an array of promises
+      const promises = endpoints.map(async (endpoint) => {
+        try {
+          const integration = await this.loadIntegration(endpoint.path);
+          if (
+            endpoint.method === 'get' &&
+            typeof integration.get === 'function'
+          ) {
+            this.log.log(`Executing ${integration.constructor.name}`);
+            const value = await integration.get(
+              currentCoordinates,
+              predictedCoordinates,
+            );
+            return value;
+          } else {
+            throw new Error(
+              `Unsupported method "${endpoint.method}" or missing implementation.`,
+            );
           }
-        })
-      );
+        } catch (error) {
+          this.log.error(
+            `Error processing endpoint ${endpoint.path}: ${error.message}`,
+          );
+          throw error;
+        } finally {
+          this.log.log(`Completed executing integration`);
+        }
+      });
+      
+      // Wait for all promises to resolve
+      const result = await Promise.all(promises);
+      return result;
     } catch (error) {
       this.log.error(`Error loading endpoints: ${error.message}`);
       return null;

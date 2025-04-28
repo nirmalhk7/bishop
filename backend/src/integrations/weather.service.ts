@@ -10,7 +10,7 @@ import ReverseGeocodeService from '../sharedservices/reversegeocode.service';
 interface WeatherInterface {}
 
 const compareMetrics = (current: number, predict: number) => {
-  return Math.abs((predict/current)-1)<=0.1;
+  return Math.abs((predict/current)-1)<=0.2;
 }
 
 @Injectable()
@@ -28,7 +28,7 @@ export default class WeatherService implements IntegrationInterface {
       params: {
         lat: start.lat,
         lon: start.lon,
-        appid: apiKey,
+        appId: apiKey,
         units: 'metric',
       },
     });
@@ -37,16 +37,16 @@ export default class WeatherService implements IntegrationInterface {
       params: {
         lat: end.lat,
         lon: end.lon,
-        appid: apiKey,
+        appId: apiKey,
         units: 'metric',
       },
     });
 
 
-
-    return Promise.all([startWeatherPromise, endWeatherPromise, 
-      this.reverseGeoCodeService.get(end)])
+    return Promise.all([startWeatherPromise, endWeatherPromise, this.reverseGeoCodeService.get(end)])
       .then(([startWeather, endWeather, endLocation]) => {
+        // const endLocation="TestValue"
+        this.log.debug(`Current location ${endLocation}`)
         const current_info = {
           brief: startWeather.data.weather[0].main,
           feels_like_temp: startWeather.data.main.feels_like,
@@ -61,28 +61,39 @@ export default class WeatherService implements IntegrationInterface {
         };
 
         if (current_info.brief !== predict_info.brief) {
+          
+          this.log.warn("Change in weather observed")
           return {
             title:"Weather Update",
             body: `Your expected location in future ${endLocation} has a change in weather: expect ${predict_info.brief}`
           };
         } else if(compareMetrics(current_info.feels_like_temp, predict_info.feels_like_temp)){
+          
+          this.log.warn("Change in temperature observed")
           return {
             title:"Weather Update",
             body: `Your expected location in future ${endLocation} has a change in weather: expect ${predict_info.feels_like_temp} deg C`
           };
         } else if(compareMetrics(current_info.humidity, predict_info.humidity)){
+          this.log.warn("Change in humidity observed")
           return {
             title:"Weather Update",
             body: `Your expected location in future ${endLocation} has a change in weather: expect humidity ${predict_info.feels_like_temp}`
           };
         } else if(compareMetrics(current_info.wind_speed, predict_info.wind_speed)){
+          this.log.warn("Change in windspeed observed")
           return {
             title:"Weather Update",
             body: `Your expected location in future ${endLocation} has a change in weather: expect wind speed ${predict_info.feels_like_temp}`
           };
         }
+        this.log.log("No major change observed")
         return null;
       })
-      .catch((err) => this.log.error(err));
+      .catch((err) => {
+        // console.log(err)
+        this.log.error(err.message);
+        this.log.error(err.stack);
+      });
   }
 }
