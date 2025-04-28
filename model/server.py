@@ -88,11 +88,6 @@ def hello():
 
 if __name__ == '__main__':
     print("Running the scheduled job before starting the server...")
-    if os.environ.get("RUN_SCHEDULED_JOB_ONCE") != "true":
-        print("Running the scheduled job before starting the server...")
-        scheduled_job()
-        os.environ["RUN_SCHEDULED_JOB_ONCE"] = "true"
-
     scheduler.init_app(app)
     scheduler.start()
     app.run(debug=True, host='0.0.0.0')
