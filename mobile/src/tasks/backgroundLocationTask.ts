@@ -43,19 +43,16 @@ export const backgroundLocationTask = async ({ data, error }: { data: any; error
       return;
     }
 
+    // Send only the latest location's coordinates
+    const latestLocation = validLocations[validLocations.length - 1];
     const response = await fetch(`${API_BASE_URL}${COORDINATES_API}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        userId,
-        locations: validLocations.map(loc => ({
-          latitude: loc.coords.latitude,
-          longitude: loc.coords.longitude,
-          timestamp: loc.timestamp,
-          accuracy: loc.coords.accuracy,
-        })),
+        latitude: latestLocation.coords.latitude,
+        longitude: latestLocation.coords.longitude
       }),
     });
 
