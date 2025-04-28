@@ -51,7 +51,8 @@ def scheduled_job():
 def predict_coordinates():
     data = request.json
     prediction_request = data.get('prediction_request', [])
-    return bishop.predict(prediction_request)
+    predictions = bishop.predict(prediction_request)
+    return jsonify(predictions), 200
 
 
 # Get all coordinates

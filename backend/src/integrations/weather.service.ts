@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { IntegrationInterface } from 'src/interfaces/integrations.interface';
 import axios from 'axios';
 import { Coordinates } from 'src/interfaces/global.interface';
-import ReverseGeocodeService from './reversegeocode.service';
+import ReverseGeocodeService from '../sharedservices/reversegeocode.service';
 
 interface WeatherInterface {}
 
@@ -61,13 +61,25 @@ export default class WeatherService implements IntegrationInterface {
         };
 
         if (current_info.brief !== predict_info.brief) {
-          return `Expected location: ${endLocation}. Change in weather expected: expect ${predict_info.brief}`;
+          return {
+            title:"Weather Update",
+            body: `Your expected location in future ${endLocation} has a change in weather: expect ${predict_info.brief}`
+          };
         } else if(compareMetrics(current_info.feels_like_temp, predict_info.feels_like_temp)){
-          return `Expected location: ${endLocation}. Change in temperature expected: expect ${predict_info.feels_like_temp} deg C`;
+          return {
+            title:"Weather Update",
+            body: `Your expected location in future ${endLocation} has a change in weather: expect ${predict_info.feels_like_temp} deg C`
+          };
         } else if(compareMetrics(current_info.humidity, predict_info.humidity)){
-          return `Expected location: ${endLocation}. Change in humidity expected: expect ${predict_info.humidity}`;
+          return {
+            title:"Weather Update",
+            body: `Your expected location in future ${endLocation} has a change in weather: expect humidity ${predict_info.feels_like_temp}`
+          };
         } else if(compareMetrics(current_info.wind_speed, predict_info.wind_speed)){
-          return `Expected location: ${endLocation}. Change in wind speed expected: expect ${predict_info.humidity}`;
+          return {
+            title:"Weather Update",
+            body: `Your expected location in future ${endLocation} has a change in weather: expect wind speed ${predict_info.feels_like_temp}`
+          };
         }
         return null;
       })

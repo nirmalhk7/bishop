@@ -13,7 +13,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "model/coordinates",
+      "endpoint": "model/coordinates/predict",
       "responses": [
         {
           "uuid": "c189a9ee-0e2e-4e64-bd1d-a1c74ed508fc",

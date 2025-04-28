@@ -14,9 +14,10 @@ import { HttpModule } from '@nestjs/axios';
 import { CoordinatesController } from './coordinates.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { IntegrationMgmtService } from './integrationmgmt.service';
-import { OpenAIService } from './openai.service';
+import { OpenAIService } from './sharedservices/openai.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SharedServicesModule } from './sharedservices/sharedservices.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     HttpModule,
     IntegrationsModule,
     NotificationsModule,
+    SharedServicesModule
   ],
   controllers: [AppController, CoordinatesController],
   providers: [AppService, IntegrationMgmtService, OpenAIService],
