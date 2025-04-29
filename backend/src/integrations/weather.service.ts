@@ -11,7 +11,7 @@ import { NotificationInterface } from 'src/interfaces/notification.interface';
 interface WeatherInterface {}
 
 const compareMetrics = (current: number, predict: number) => {
-  return Math.abs((predict/current)-1)>=1.0;
+  return Math.abs((predict/current)-1)>=0;
 }
 
 @Injectable()

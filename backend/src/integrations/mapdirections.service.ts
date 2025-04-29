@@ -42,7 +42,7 @@ export default class MapDirectionsService implements IntegrationInterface {
     const coordinates = `${start.lon},${start.lat};${end.lon},${end.lat}`;
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coordinates}`;
 
-    if (this.distance(start, end) >= 0.5) {
+    if (this.distance(start, end) >= 0) {
       const location = await this.reverseGeoCodeService.get(end);
       return axios
         .get(url, {
