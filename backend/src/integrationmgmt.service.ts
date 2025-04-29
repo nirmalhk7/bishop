@@ -1,43 +1,116 @@
+// import { Injectable, Logger } from '@nestjs/common';
+// import * as path from 'path';
+// import { AppService } from './app.service';
+// import { IntegrationInterface } from './interfaces/integrations.interface';
+// import { Coordinates } from './interfaces/global.interface';
+
+// @Injectable()
+// export class IntegrationMgmtService {
+//   private readonly log = new Logger(IntegrationMgmtService.name);
+
+//   constructor(private readonly appService: AppService) {}
+
+//   private async loadIntegration(
+//     endpointPath: string,
+//   ): Promise<IntegrationInterface> {
+//     const resolvedPath = this.resolveModulePath(endpointPath);
+//     try {
+//       const module = await import(resolvedPath);
+//       const IntegrationClass = module.default;
+
+//       if (typeof IntegrationClass !== 'function') {
+//         throw new Error(`Invalid export from module at ${resolvedPath}`);
+//       }
+
+//       return new IntegrationClass();
+//     } catch (error) {
+//       this.log.error(
+//         `Failed to load integration from ${resolvedPath}: ${error.message}`,
+//       );
+//       throw error;
+//     }
+//   }
+
+//   private resolveModulePath(endpointPath: string): string {
+//     const basePath =
+//       process.env.NODE_ENV === 'production'
+//         ? path.join(__dirname, '..', '..', 'src')
+//         : __dirname;
+//     return path.resolve(basePath, endpointPath);
+//   }
+
+//   async runSvcs(
+//     currentCoordinates: Coordinates,
+//     predictedCoordinates: Coordinates,
+//   ) {
+//     const settings = this.appService.getSettings();
+//     const endpoints = settings?.endpoints;
+
+//     if (!Array.isArray(endpoints) || endpoints.length === 0) {
+//       this.log.warn('No endpoints configured.');
+//       return null;
+//     }
+
+//     try {
+//       // Create an array of promises
+//       const promises = endpoints.map(async (endpoint) => {
+//         try {
+//           const integration = await this.loadIntegration(endpoint.path);
+//           if (
+//             endpoint.method === 'get' &&
+//             typeof integration.get === 'function'
+//           ) {
+//             this.log.log(`Executing ${integration.constructor.name}`);
+//             const value = await integration.get(
+//               currentCoordinates,
+//               predictedCoordinates,
+//             );
+//             return value;
+//           } else {
+//             throw new Error(
+//               `Unsupported method "${endpoint.method}" or missing implementation.`,
+//             );
+//           }
+//         } catch (error) {
+//           this.log.error(
+//             `Error processing endpoint ${endpoint.path}: ${error.message}`,
+//           );
+//           throw error;
+//         } finally {
+//           this.log.log(`Completed executing integration`);
+//         }
+//       });
+      
+//       // Wait for all promises to resolve
+//       const result = await Promise.all(promises);
+//       return result;
+//     } catch (error) {
+//       this.log.error(`Error loading endpoints: ${error.message}`);
+//       return null;
+//     }
+//   }
+// }
+
+
+
+
+
+
+
 import { Injectable, Logger } from '@nestjs/common';
-import * as path from 'path';
 import { AppService } from './app.service';
-import { IntegrationInterface } from './interfaces/integrations.interface';
 import { Coordinates } from './interfaces/global.interface';
+import GoogleCalendarService from './integrations/googlecalendar.service';
 
 @Injectable()
 export class IntegrationMgmtService {
   private readonly log = new Logger(IntegrationMgmtService.name);
 
-  constructor(private readonly appService: AppService) {}
-
-  private async loadIntegration(
-    endpointPath: string,
-  ): Promise<IntegrationInterface> {
-    const resolvedPath = this.resolveModulePath(endpointPath);
-    try {
-      const module = await import(resolvedPath);
-      const IntegrationClass = module.default;
-
-      if (typeof IntegrationClass !== 'function') {
-        throw new Error(`Invalid export from module at ${resolvedPath}`);
-      }
-
-      return new IntegrationClass();
-    } catch (error) {
-      this.log.error(
-        `Failed to load integration from ${resolvedPath}: ${error.message}`,
-      );
-      throw error;
-    }
-  }
-
-  private resolveModulePath(endpointPath: string): string {
-    const basePath =
-      process.env.NODE_ENV === 'production'
-        ? path.join(__dirname, '..', '..', 'src')
-        : __dirname;
-    return path.resolve(basePath, endpointPath);
-  }
+  constructor(
+    private readonly appService: AppService,
+    private readonly googleCalendarService: GoogleCalendarService,
+    // Add other services like WeatherService here when needed
+  ) {}
 
   async runSvcs(
     currentCoordinates: Coordinates,
@@ -52,41 +125,31 @@ export class IntegrationMgmtService {
     }
 
     try {
-      // Create an array of promises
-      const promises = endpoints.map(async (endpoint) => {
-        try {
-          const integration = await this.loadIntegration(endpoint.path);
-          if (
-            endpoint.method === 'get' &&
-            typeof integration.get === 'function'
-          ) {
-            this.log.log(`Executing ${integration.constructor.name}`);
-            const value = await integration.get(
-              currentCoordinates,
-              predictedCoordinates,
-            );
-            return value;
-          } else {
-            throw new Error(
-              `Unsupported method "${endpoint.method}" or missing implementation.`,
-            );
-          }
-        } catch (error) {
-          this.log.error(
-            `Error processing endpoint ${endpoint.path}: ${error.message}`,
+      const results: { title: string; body: string }[] = [];
+
+      for (const endpoint of endpoints) {
+        if (endpoint.path.includes('googlecalendar')) {
+          this.log.log('Running GoogleCalendarService...');
+          const result = await this.googleCalendarService.get(
+            currentCoordinates,
+            predictedCoordinates,
           );
-          throw error;
-        } finally {
-          this.log.log(`Completed executing integration`);
+          if (result) {
+            this.log.debug('GoogleCalendarService returned notification.');
+            results.push(result);
+          } else {
+            this.log.debug('GoogleCalendarService returned null.');
+          }
         }
-      });
-      
-      // Wait for all promises to resolve
-      const result = await Promise.all(promises);
-      return result;
+
+        // Extend here for weather or other integrations if needed
+      }
+
+      return results;
     } catch (error) {
-      this.log.error(`Error loading endpoints: ${error.message}`);
+      this.log.error(`Error running integrations: ${error.message}`);
       return null;
     }
   }
 }
+

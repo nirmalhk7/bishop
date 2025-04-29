@@ -19,5 +19,8 @@ import { ConfigModule } from '@nestjs/config';
     ReverseGeocodeService,
     WeatherService,
   ],
+  exports: [
+    GoogleCalendarService,  // ✅ Must export it
+  ],
 })
 export class IntegrationsModule {}
