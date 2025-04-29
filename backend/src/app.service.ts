@@ -9,6 +9,7 @@ export class AppService {
   }
 
   getSettings(): SettingsInterface {
+    console.log("Environment", process.env.NODE_ENV)
     if (process.env.NODE_ENV !== 'production') {
       const filePath = path.resolve(__dirname, '../settings.json');
       const fileContent = fs.readFileSync(filePath, 'utf-8');
