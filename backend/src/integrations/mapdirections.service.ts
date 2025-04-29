@@ -6,6 +6,7 @@ import { IntegrationInterface } from 'src/interfaces/integrations.interface';
 import axios from 'axios';
 import { Coordinates } from 'src/interfaces/global.interface';
 import ReverseGeocodeService from 'src/sharedservices/reversegeocode.service';
+import { NotificationInterface } from 'src/interfaces/notification.interface';
 
 @Injectable()
 export default class MapDirectionsService implements IntegrationInterface {
@@ -37,13 +38,11 @@ export default class MapDirectionsService implements IntegrationInterface {
     return earthRadiusInMiles * c;
   }
 
-  async get(start: Coordinates, end: Coordinates): Promise<any> {
+  async get(start: Coordinates, end: Coordinates): Promise<NotificationInterface | null> {
     const coordinates = `${start.lon},${start.lat};${end.lon},${end.lat}`;
-    console.log(coordinates);
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coordinates}`;
 
     if (this.distance(start, end) >= 0.5) {
-
       const location = await this.reverseGeoCodeService.get(end);
       return axios
         .get(url, {
@@ -58,14 +57,18 @@ export default class MapDirectionsService implements IntegrationInterface {
           if (resp.data.routes.length > 0) {
             const distanceMiles = (resp.data.routes[0].distance / 1609.344).toFixed(2);
             const durationMins = (resp.data.routes[0].duration / 60).toFixed(2);
-            this.log.debug(`Duration (mins): ${durationMins}, Distance: ${distanceMiles}`)
+            this.log.debug(`Duration (mins): ${durationMins}, Distance: ${distanceMiles}`);
             return {
               title: "Traffic Update",
-              body: `Predicted future location ${location} is ${distanceMiles}mi away, and would take ${durationMins} mins by traffic conditions`
-            }
+              body: `Predicted future location ${location} is ${distanceMiles}mi away, and would take ${durationMins} mins by traffic conditions`,
+            };
           }
+          return null; // Explicitly return null if no routes are found
         })
-        .catch((err) => this.log.error(err));
+        .catch((err) => {this.log.error(err); return null;});
     }
+    this.log.debug("No major change observed")
+    return null;
+    
   }
 }

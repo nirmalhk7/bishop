@@ -130,21 +130,18 @@ export class CoordinatesController {
           predicted_coordinate,
         );
 
+        // Filter out null or empty notifications
+
         // Return the first notification if any were generated
         if (notifications && notifications.length > 0) {
-          const firstNotification = notifications[0];
-          return {
-            title: firstNotification.title,
-            body: firstNotification.body,
-          } as Notification;
+          return notifications;
         } 
         
-        return null;
+        return notifications;
       });
 
       // Wait for all notification checks to complete
-      const resolvedNotifications = await Promise.all(notificationPromises);
-      
+      const resolvedNotifications = (await Promise.all(notificationPromises))[0];
       // Step 5: Send any valid notifications
       resolvedNotifications.forEach((notification) => {
         if (
