@@ -103,17 +103,7 @@ export class CoordinatesController {
           timestamp: now.add(30, 'minute').toISOString(),
           current_lat: current_coord.lat,
           current_long: current_coord.lon,
-        },
-        {
-          timestamp: now.add(1, 'hour').toISOString(),
-          current_lat: current_coord.lat,
-          current_long: current_coord.lon,
-        },
-        {
-          timestamp: now.add(2, 'hour').toISOString(),
-          current_lat: current_coord.lat,
-          current_long: current_coord.lon,
-        },
+        }
       ];
       
       // Step 3: Send prediction request to model
