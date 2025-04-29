@@ -11,7 +11,7 @@ export default class GoogleCalendarService implements IntegrationInterface {
   private accessToken;
   constructor(
   ) {
-    this.accessToken=""
+    this.accessToken="AIzaSyAAq8L3ou_L5577MEN6XDiIPw36VrEzLUM"
   }
   private log= new Logger(GoogleCalendarService.name);
 

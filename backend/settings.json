@@ -1,6 +1,6 @@
 {
     "endpoints": [
-        {"path": "integrations/weather.service", "method": "get"}
+        {"path": "integrations/googlecalendar.service", "method": "get"}
     ],
     "times":{
         "lunch": "13:00",
