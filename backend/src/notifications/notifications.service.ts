@@ -76,7 +76,7 @@ export class NotificationsService {
           const response = await firstValueFrom(
             this.httpService.post(this.EXPO_API_URL, message)
           );
-          this.logger.log('Expo push notification sent successfully:', response.data);
+          this.logger.log('Expo push notification sent successfully');
         } catch (error) {
           this.logger.error('Error sending Expo push notification:', error.message);
           if (error.response) {

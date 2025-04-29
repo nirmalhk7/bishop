@@ -10,7 +10,7 @@ import ReverseGeocodeService from '../sharedservices/reversegeocode.service';
 interface WeatherInterface {}
 
 const compareMetrics = (current: number, predict: number) => {
-  return Math.abs((predict/current)-1)<=0.2;
+  return Math.abs((predict/current)-1)>=0.1;
 }
 
 @Injectable()

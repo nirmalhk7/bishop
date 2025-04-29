@@ -56,8 +56,8 @@ export default class MapDirectionsService implements IntegrationInterface {
         })
         .then((resp) => {
           if (resp.data.routes.length > 0) {
-            const distanceMiles = resp.data.routes[0].distance / 1609.344;
-            const durationMins = resp.data.routes[0].duration / 60;
+            const distanceMiles = (resp.data.routes[0].distance / 1609.344).toFixed(2);
+            const durationMins = (resp.data.routes[0].duration / 60).toFixed(2);
             this.log.debug(`Duration (mins): ${durationMins}, Distance: ${distanceMiles}`)
             return {
               title: "Traffic Update",
