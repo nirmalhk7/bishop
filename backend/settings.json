@@ -1,5 +1,6 @@
 {
     "endpoints": [
+        {"path": "integrations/mapdirections.service", "method": "get"},
         {"path": "integrations/weather.service", "method": "get"}
     ],
     "times":{

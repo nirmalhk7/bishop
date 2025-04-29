@@ -39,25 +39,33 @@ export default class MapDirectionsService implements IntegrationInterface {
 
   async get(start: Coordinates, end: Coordinates): Promise<any> {
     const coordinates = `${start.lon},${start.lat};${end.lon},${end.lat}`;
-    console.log(coordinates)
-    const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}`;
+    console.log(coordinates);
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coordinates}`;
 
-    return axios
-      .get(url, {
-        params: {
-          access_token: this.accessToken,
-          alternatives: false,
-          geometries: 'geojson',
-          overview: 'full',
-        },
-      })
-      .then((resp) => {
-        if (resp.data.length > 0) {
-          const distance = resp.data[0].distance;
-          const duration = resp.data[0].duration;
+    if (this.distance(start, end) >= 0.5) {
 
-        }
-      })
-      .catch((err) => this.log.error(err));
+      const location = await this.reverseGeoCodeService.get(end);
+      return axios
+        .get(url, {
+          params: {
+            access_token: this.accessToken,
+            alternatives: false,
+            geometries: 'geojson',
+            annotations: 'distance,duration',
+          },
+        })
+        .then((resp) => {
+          if (resp.data.routes.length > 0) {
+            const distanceMiles = resp.data.routes[0].distance / 1609.344;
+            const durationMins = resp.data.routes[0].duration / 60;
+            this.log.debug(`Duration (mins): ${durationMins}, Distance: ${distanceMiles}`)
+            return {
+              title: "Traffic Update",
+              body: `Predicted future location ${location} is ${distanceMiles}mi away, and would take ${durationMins} mins by traffic conditions`
+            }
+          }
+        })
+        .catch((err) => this.log.error(err));
+    }
   }
 }
