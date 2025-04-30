@@ -10,6 +10,7 @@ import * as path from 'path';
 import GeocodeService from 'src/sharedservices/geocode.service';
 import { NotificationInterface } from 'src/interfaces/notification.interface';
 import MapDirectionsService from './mapdirections.service';
+const fs = require('fs');
 
 @Injectable()
 export default class GoogleCalendarService implements IntegrationInterface {
@@ -19,10 +20,23 @@ export default class GoogleCalendarService implements IntegrationInterface {
   private calendar;
 
   constructor() {
-    const keyFilePath = path.join(
-      __dirname,
-      '../../bdarch-bishop-calendar-svc.gcp.json',
-    );
+    let keyFilePath;
+    if (process.env.NODE_ENV === 'production') {
+      const settings = process.env.BISHOP_GCAL_SETTINGS;
+      if (settings) {
+        const filePath = '/tmp/bdarch-bishop-calendar-svc.gcp.json';
+        fs.writeFileSync(filePath, settings);
+        keyFilePath = filePath;
+        this.log.debug(`Using production env at ${keyFilePath}`)
+      } else {
+        throw new Error('BISHOP_GCAL_SETTINGS environment variable is not set');
+      }
+    } else {
+      keyFilePath = path.join(
+        __dirname,
+        '../../bdarch-bishop-calendar-svc.gcp.json',
+      );
+    }
 
     const auth = new google.auth.GoogleAuth({
       keyFile: keyFilePath,
