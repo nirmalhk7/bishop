@@ -2,6 +2,7 @@
     "endpoints": [
       { "path": "integrations/googlecalendar.service", "method": "get" },
       { "path": "integrations/mapdirections.service", "method": "get" },
+      { "path": "integrations/ai.service", "method": "get" },
       { "path": "integrations/weather.service", "method": "get" }
     ],
     "times": {
