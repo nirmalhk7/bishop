@@ -32,7 +32,10 @@ export class IntegrationMgmtService {
   }
 
   private resolveModulePath(endpointPath: string): string {
-    const basePath = process.env.NODE_ENV === 'production' ? 'dist' : __dirname;
+    const basePath =
+      process.env.NODE_ENV === 'production'
+        ? path.join(__dirname, '..', '..', 'src')
+        : __dirname;
     return path.resolve(basePath, endpointPath);
   }
 
@@ -87,3 +90,4 @@ export class IntegrationMgmtService {
     }
   }
 }
+

@@ -73,19 +73,19 @@ export default class WeatherService implements IntegrationInterface {
           this.log.warn("Change in temperature observed")
           return {
             title:"Weather Update",
-            body: `Your expected location in future ${endLocation} has a change in weather: expect ${predict_info.feels_like_temp} deg C`
+            body: `Your expected location in future "${endLocation}" has a change in weather: expect ${predict_info.feels_like_temp} deg C`
           };
         } else if(compareMetrics(current_info.humidity, predict_info.humidity)){
           this.log.warn("Change in humidity observed")
           return {
             title:"Weather Update",
-            body: `Your expected location in future ${endLocation} has a change in weather: expect humidity ${predict_info.feels_like_temp}`
+            body: `Your expected location in future "${endLocation}" has a change in weather: expect humidity ${predict_info.feels_like_temp}`
           };
         } else if(compareMetrics(current_info.wind_speed, predict_info.wind_speed)){
           this.log.warn("Change in windspeed observed")
           return {
             title:"Weather Update",
-            body: `Your expected location in future ${endLocation} has a change in weather: expect wind speed ${predict_info.feels_like_temp}`
+            body: `Your expected location in future "${endLocation}" has a change in weather: expect wind speed ${predict_info.feels_like_temp}`
           };
         }
         this.log.debug("No major change observed")

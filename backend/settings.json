@@ -1,15 +1,17 @@
 {
     "endpoints": [
-        {"path": "integrations/mapdirections.service", "method": "get"},
-        {"path": "integrations/weather.service", "method": "get"}
+      { "path": "integrations/googlecalendar.service", "method": "get" },
+      { "path": "integrations/mapdirections.service", "method": "get" },
+      { "path": "integrations/weather.service", "method": "get" }
     ],
-    "times":{
-        "lunch": "13:00",
-        "dinner": "20:00",
-        "breakfast": "09:00"
+    "times": {
+      "lunch": "13:00",
+      "dinner": "20:00",
+      "breakfast": "09:00"
     },
     "modesOfTravel": [
-        "walk",
-        "cycle"
+      "walk",
+      "cycle"
     ]
-}
+  }
+  

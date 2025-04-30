@@ -38,37 +38,58 @@ export default class MapDirectionsService implements IntegrationInterface {
     return earthRadiusInMiles * c;
   }
 
-  async get(start: Coordinates, end: Coordinates): Promise<NotificationInterface | null> {
+  async getDirectionsData(
+    start: Coordinates,
+    end: Coordinates,
+  ): Promise<{ distanceMiles: string; durationMins: string } | null> {
     const coordinates = `${start.lon},${start.lat};${end.lon},${end.lat}`;
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coordinates}`;
 
+    return axios
+      .get(url, {
+        params: {
+          access_token: this.accessToken,
+          alternatives: false,
+          geometries: 'geojson',
+          annotations: 'distance,duration',
+        },
+      })
+      .then((resp) => {
+        if (resp.data.routes.length > 0) {
+          const distanceMiles = (
+            resp.data.routes[0].distance / 1609.344
+          ).toFixed(2);
+          const durationMins = (resp.data.routes[0].duration / 60).toFixed(2);
+          this.log.debug(
+            `Duration (mins): ${durationMins}, Distance: ${distanceMiles}`,
+          );
+          return { distanceMiles, durationMins };
+        }
+        return null; // No routes found
+      })
+      .catch((err) => {
+        this.log.error(err);
+        return null;
+      });
+  }
+
+  async get(
+    start: Coordinates,
+    end: Coordinates,
+  ): Promise<NotificationInterface | null> {
     if (this.distance(start, end) >= 0) {
-      const location = await this.reverseGeoCodeService.get(end);
-      return axios
-        .get(url, {
-          params: {
-            access_token: this.accessToken,
-            alternatives: false,
-            geometries: 'geojson',
-            annotations: 'distance,duration',
-          },
-        })
-        .then((resp) => {
-          if (resp.data.routes.length > 0) {
-            const distanceMiles = (resp.data.routes[0].distance / 1609.344).toFixed(2);
-            const durationMins = (resp.data.routes[0].duration / 60).toFixed(2);
-            this.log.debug(`Duration (mins): ${durationMins}, Distance: ${distanceMiles}`);
-            return {
-              title: "Traffic Update",
-              body: `Predicted future location ${location} is ${distanceMiles}mi away, and would take ${durationMins} mins by traffic conditions`,
-            };
-          }
-          return null; // Explicitly return null if no routes are found
-        })
-        .catch((err) => {this.log.error(err); return null;});
+      const directionsData = await this.getDirectionsData(start, end);
+
+      if (directionsData) {
+        const location = await this.reverseGeoCodeService.get(end);
+        return {
+          title: 'Traffic Update',
+          body: `Predicted future location "${location}" is ${directionsData.distanceMiles}mi away, and would take ${directionsData.durationMins} mins by traffic conditions`,
+        };
+      }
     }
-    this.log.debug("No major change observed")
+
+    this.log.debug('No major change observed');
     return null;
-    
   }
 }

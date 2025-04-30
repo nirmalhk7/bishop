@@ -154,7 +154,7 @@ export class CoordinatesController {
             notification.title,
             notification.body,
           );
-          this.log.debug(`Sent notification: ${notification.title}`);
+          this.log.debug(`Sent notification: ${notification.title} ${notification.body}`);
         }
       });
       
