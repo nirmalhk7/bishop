@@ -103,17 +103,7 @@ export class CoordinatesController {
           timestamp: now.add(30, 'minute').toISOString(),
           current_lat: current_coord.lat,
           current_long: current_coord.lon,
-        },
-        {
-          timestamp: now.add(1, 'hour').toISOString(),
-          current_lat: current_coord.lat,
-          current_long: current_coord.lon,
-        },
-        {
-          timestamp: now.add(2, 'hour').toISOString(),
-          current_lat: current_coord.lat,
-          current_long: current_coord.lon,
-        },
+        }
       ];
       
       // Step 3: Send prediction request to model
@@ -140,21 +130,18 @@ export class CoordinatesController {
           predicted_coordinate,
         );
 
+        // Filter out null or empty notifications
+
         // Return the first notification if any were generated
         if (notifications && notifications.length > 0) {
-          const firstNotification = notifications[0];
-          return {
-            title: firstNotification.title,
-            body: firstNotification.body,
-          } as Notification;
+          return notifications;
         } 
         
-        return null;
+        return notifications;
       });
 
       // Wait for all notification checks to complete
-      const resolvedNotifications = await Promise.all(notificationPromises);
-      
+      const resolvedNotifications = (await Promise.all(notificationPromises))[0];
       // Step 5: Send any valid notifications
       resolvedNotifications.forEach((notification) => {
         if (

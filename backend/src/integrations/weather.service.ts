@@ -6,11 +6,12 @@ import { IntegrationInterface } from 'src/interfaces/integrations.interface';
 import axios from 'axios';
 import { Coordinates } from 'src/interfaces/global.interface';
 import ReverseGeocodeService from '../sharedservices/reversegeocode.service';
+import { NotificationInterface } from 'src/interfaces/notification.interface';
 
 interface WeatherInterface {}
 
 const compareMetrics = (current: number, predict: number) => {
-  return Math.abs((predict/current)-1)<=0.2;
+  return Math.abs((predict/current)-1)>=0;
 }
 
 @Injectable()
@@ -20,7 +21,7 @@ export default class WeatherService implements IntegrationInterface {
   private log = new Logger(WeatherService.name);
   private reverseGeoCodeService = new ReverseGeocodeService();
   
-  async get(start: Coordinates, end: Coordinates): Promise<any> {
+  async get(start: Coordinates, end: Coordinates): Promise<NotificationInterface | null> {
     const apiKey = process.env.WEATHER_API_KEY;
     const url = 'https://api.openweathermap.org/data/2.5/weather';
 
@@ -87,13 +88,14 @@ export default class WeatherService implements IntegrationInterface {
             body: `Your expected location in future ${endLocation} has a change in weather: expect wind speed ${predict_info.feels_like_temp}`
           };
         }
-        this.log.log("No major change observed")
+        this.log.debug("No major change observed")
         return null;
       })
       .catch((err) => {
         // console.log(err)
         this.log.error(err.message);
         this.log.error(err.stack);
+        return null;
       });
   }
 }
